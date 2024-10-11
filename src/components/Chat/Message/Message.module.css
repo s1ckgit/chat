@@ -1,0 +1,27 @@
+.message {
+  border-radius: 32px;
+  padding: 16px;
+  height: max-content;
+
+
+  display: flex;
+  align-items: end;
+  column-gap: 12px;
+
+  border: 1px solid black;
+  max-width: 50%;
+  width: max-content;
+}
+
+.message_initiator {
+  background-color: bisque;
+  justify-self: end;
+}
+
+
+.message-text {
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
