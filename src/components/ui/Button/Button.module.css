@@ -1,0 +1,11 @@
+.button {
+  cursor: pointer;
+  border: none;
+}
+
+
+.button_icon {
+  background-color: transparent;
+  width: min-content;
+  padding: 8px;
+}

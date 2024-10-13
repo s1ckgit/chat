@@ -12,6 +12,7 @@ import {
 
 import './index.css';
 import { RootPage, ErrorPage } from './routes/index.tsx';
+import { ThemeProvider } from './theme/theme.tsx';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </StrictMode>,
 );

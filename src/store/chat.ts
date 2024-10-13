@@ -14,10 +14,6 @@ export const useChat = create<Partial<IChat>>(() => ({
 
 export const fetchMessages = async (id: string) => {
   if(!id) return;
-  useChat.setState(() => ({ isLoading: true }));
-  await new Promise<void>((resolve) => {
-    setTimeout(() => resolve(), 5000);
-  });
   // const res = await fetch(`/chat/${id}`);
   // const messages = await res.json();
   useChat.setState(() => ({ isLoading: false }));
