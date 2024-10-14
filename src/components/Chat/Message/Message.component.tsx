@@ -1,6 +1,7 @@
 import cn from 'classnames';
 
 import styles from './Message.module.css';
+import { useColors, useTypography } from '../../../theme/hooks';
 
 interface IMessageProps {
   timestamp?: string;
@@ -9,16 +10,25 @@ interface IMessageProps {
 }
 
 const Message = ({ timestamp, senderID, text }: IMessageProps) => {
+  const colors = useColors();
+  const typography = useTypography();
+
   // const isInitiatorMessage = senderID === user.id;
   const isInitiatorMessage = Math.random() * 10 > 5 ? true : false;
   const time = '9:17';
 
   return (
-    <div className={cn(styles.message, {
-      [styles['message_initiator']]: isInitiatorMessage
-    })}>
-      <p className={styles['message-text']}>{text}</p>
-      <span>{time}</span>
+    <div 
+      style={{ 
+        borderColor: isInitiatorMessage ? colors['messages-initiator-border'] : colors['messages-receiver-border'], 
+        backgroundColor: isInitiatorMessage ? colors['messages-initiator'] : colors['messages-receiver'] 
+      }} 
+      className={cn(styles.message, {
+        [styles['message_initiator']]: isInitiatorMessage
+      })}
+    >
+      <p style={{ ...typography['messages-text'] }} className={styles['message-text']}>{text}  <span className={styles['message-date']} style={{ ...typography['messages-date'], color: isInitiatorMessage ? colors['messages-initiator-date'] : colors['messages-receiver-date']}}>{time}</span>  </p>
+      
     </div>
   );
 };

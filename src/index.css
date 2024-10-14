@@ -20,3 +20,9 @@ html {
   justify-content: center;
   height: 100%;
 }
+
+.MuiBadge-root span {
+  top: 0;
+  right: 50%;
+  transform: translate(50%, 0);
+}

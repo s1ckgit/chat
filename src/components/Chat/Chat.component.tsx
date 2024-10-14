@@ -1,18 +1,17 @@
 import styles from './Chat.module.css';
 import Message from './Message/Message.component';
-import { Input, CircularProgress } from '@mui/material';
+import { Input, CircularProgress, IconButton } from '@mui/material';
 import { fetchMessages, useChat } from '../../store';
 import { useEffect } from 'react';
 
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
-import Button from '../ui/Button/Button.ui';
-import { useColors, useTransitions } from '../../theme/hooks';
+import { useColors, useTransitions, useTypography } from '../../theme/hooks';
 import SendIcon from '@mui/icons-material/Send';
 
 const mockMessages = [
   {
-    text: 'мы делили апельсин',
+    text: 'мы делили апельсин ksrnghrsjknsroih ',
 
   },
   {
@@ -40,6 +39,7 @@ interface IChatProps {
 const Chat = ({ id }: IChatProps) => {
   const colors = useColors();
   const transitions = useTransitions();
+  const typography = useTypography();
 
   useEffect(() => {
     if(!id) return;
@@ -57,28 +57,32 @@ const Chat = ({ id }: IChatProps) => {
       <div className={styles.chat}>
         <div className={styles['chat-bar']} style={{ borderColor: colors['ghost-light'] }}>
           <div className={styles['chat-bar-receiver']}>
-            <p className={styles['chat-bar-name']}>Name</p>
-            <p style={{ color: colors['ghost-main'] }} className={styles['chat-bar-activity']}>last seen recently</p>
+            <p style={{ ...typography.name }} className={styles['chat-bar-name']}>Name</p>
+            <p style={{ ...typography.info, color: colors['ghost-main'] }} className={styles['chat-bar-activity']}>last seen recently</p>
           </div>
           <div className={styles['chat-bar-actions']}>
-            <Button variant="icon">
-              <MoreVertIcon sx={{ 
-                transition: `color`,
-                transitionDuration: transitions['standard'],
-                '&:hover': {
-                  color: colors['ghost-dark']
-                }
-               }} color='ghost' />
-            </Button>
-            <Button variant="icon">
-              <SearchIcon sx={{ 
-                transition: `color`,
-                transitionDuration: transitions['standard'],
-                '&:hover': {
-                  color: colors['ghost-dark']
-                }
-               }} color='ghost' />
-            </Button>
+            <IconButton 
+              sx={{ 
+                  '&:hover svg': {
+                    transition: `color`,
+                    transitionDuration: transitions['standard'],
+                    color: colors['ghost-dark']
+                  }
+               }}
+            >
+              <MoreVertIcon color='ghost' />
+            </IconButton>
+            <IconButton 
+              sx={{ 
+                  '&:hover svg': {
+                    transition: `color`,
+                    transitionDuration: transitions['standard'],
+                    color: colors['ghost-dark']
+                  }
+               }}
+            >
+              <SearchIcon color='ghost' />
+            </IconButton>
           </div>
         </div>
 
@@ -90,9 +94,9 @@ const Chat = ({ id }: IChatProps) => {
 
         <div className={styles['chat-actions']} style={{ borderColor: colors['ghost-light'] }}>
           <Input disableUnderline placeholder='Сюда хуйню свою высирай' />
-          <Button variant='icon'>
+          <IconButton>
             <SendIcon sx={{ fontSize: 40 }} color={'primary'} />
-          </Button>
+          </IconButton>
         </div>
 
       </div>

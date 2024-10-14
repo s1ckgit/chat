@@ -7,7 +7,13 @@ export const useColors = () => {
     'ghost-dark': theme.palette.ghost.dark,
     'ghost-light': theme.palette.ghost.light,
     'ghost-main': theme.palette.ghost.main,
-    'primary-main': theme.palette.primary.main
+    'primary-main': theme.palette.primary.main,
+    'messages-initiator': theme.palette.messages.initiator,
+    'messages-receiver': theme.palette.messages.receiver,
+    'messages-initiator-date': theme.palette.messages.initiatorDate,
+    'messages-receiver-date': theme.palette.messages.receiverDate,
+    'messages-initiator-border': theme.palette.messages.initiatorBorder,
+    'messages-receiver-border': theme.palette.messages.receiverBorder
   };
 
   return colors;
@@ -22,4 +28,17 @@ export const useTransitions = () => {
   };
 
   return transitions;
+};
+
+export const useTypography = () => {
+  const theme = useTheme();
+
+  const typography = {
+    'messages-text': theme.typography.messagesText,
+    'messages-date': theme.typography.messagesDate,
+    'name': theme.typography.name,
+    'info': theme.typography.info
+  };
+
+  return typography;
 };

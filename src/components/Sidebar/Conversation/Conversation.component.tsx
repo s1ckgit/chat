@@ -1,11 +1,12 @@
-import { useColors, useTransitions } from '../../theme/hooks';
+import { useColors, useTransitions, useTypography } from '../../../theme/hooks';
 import styles from './Conversation.module.css';
 
-import { Avatar, Box } from '@mui/material';
+import { Avatar, Box, Badge } from '@mui/material';
 
 const Conversation = () => {
   const colors = useColors();
   const transitions = useTransitions();
+  const typography = useTypography();
 
   const onClick = () => {
     // Change chat id
@@ -21,10 +22,10 @@ const Conversation = () => {
      }}>
       <Avatar src='https://www.drivetest.de/wp-content/uploads/2019/08/drivetest-avatar-m.png' />
       <div className={styles['conversation-info']}>
-        <p className={styles['conversation-name']}>name</p>
-        <p style={{ color: colors['ghost-main'] }} className={styles['conversation-date']}>date</p>
-        <p style={{ color: colors['ghost-main'] }} className={styles['conversation-message']}>last message</p>
-        <div style={{ backgroundColor: colors['ghost-main'] }} className={styles['conversation-notifications']}>99+</div>
+        <p style={{ ...typography.name }} className={styles['conversation-name']}>name</p>
+        <p style={{ ...typography.info, color: colors['ghost-main'] }} className={styles['conversation-date']}>date</p>
+        <p style={{ ...typography['messages-text'], color: colors['ghost-main'] }} className={styles['conversation-message']}>last message</p>
+        <Badge badgeContent={100} color='primary' max={99} />
       </div>
     </Box>
   );

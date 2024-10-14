@@ -35,6 +35,8 @@
   row-gap: 12px;
 
   padding: 10px 16px;
+
+  background: linear-gradient(to bottom, #c8e6c9, #a5d6a7);
 }
 
 .chat-actions {
