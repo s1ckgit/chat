@@ -2,9 +2,12 @@ import Grid from '@mui/material/Grid2';
 import { Chat } from "../components/index";
 import { useTheme } from '@mui/material/styles';
 import Sidebar from '../components/Sidebar/Sidebar.component';
+import { useLoaderData } from 'react-router-dom';
+import type { IUser } from '../types';
 
 const Root = () => {
   const theme = useTheme();
+  const { userData } = useLoaderData() as { userData: IUser;};
 
   return (
     <Grid sx={{ minHeight:'100vh' }} container>

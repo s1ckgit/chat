@@ -12,7 +12,7 @@ export const useUser = create<Partial<IUser>>(() => ({
 }));
 
 export const fetchUser = async () => {
-  const res = await fetch(`/me`);
+  const res = await fetch(`/api/me`);
   const user = await res.json();
   useUser.setState(() => ({ ...user }));
 };

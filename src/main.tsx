@@ -9,23 +9,37 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+import QueryClientProvider from './api/queries/QueryClientProvider.tsx';
 
 import './index.css';
-import { RootPage, ErrorPage } from './routes/index.tsx';
+import { RootPage, ErrorPage, LoginPage, RegistrationPage } from './routes/index.tsx';
 import { ThemeProvider } from './theme/theme.tsx';
+import { rootLoader } from './routes/loaders.ts';
+
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootPage />,
     errorElement: <ErrorPage />,
+    loader: rootLoader
   },
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/registration',
+    element: <RegistrationPage />,
+  }
 ]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
-      <RouterProvider router={router} />
+      <QueryClientProvider>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,
 );
