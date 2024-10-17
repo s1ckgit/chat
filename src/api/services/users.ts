@@ -13,3 +13,15 @@ export const getMyInfo = async () => {
   
   return data;
 };
+
+export const getContacts = async () => {
+  const { data } = await api.get('/me/contacts', { withCredentials: true });
+
+  return data;
+};
+
+export const addContact = async (login: string) => {
+  const { data } = await api.post('/contacts/add', { login }, { withCredentials: true });
+
+  return data;
+};

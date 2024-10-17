@@ -1,20 +1,56 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
+import { Socket } from 'socket.io-client';
 
 interface IChat {
-  messages: any[];
-  isLoading: boolean;
+  id: string | undefined;
+}
+
+interface IConversation {
+  id: string;
+    participants: {
+      login: string;
+    }[];
+    lastMessage: {
+      createdAt: Date;
+      content: string;
+      sender: {
+          id: string;
+          login: string;
+          password: string;
+      };
+    }
+}
+
+interface IConversations {
+  conversations: IConversation[] | undefined
+}
+
+interface ISocket {
+  socket: Socket | undefined;
 }
 
 
 export const useChat = create<Partial<IChat>>(() => ({
-  messages: undefined,
-  isLoading: false,
+  id: undefined
 }));
 
-export const fetchMessages = async (id: string) => {
-  if(!id) return;
-  // const res = await fetch(`/chat/${id}`);
-  // const messages = await res.json();
-  useChat.setState(() => ({ isLoading: false }));
+export const setChatId = (id: string | undefined) => {
+  useChat.setState(() => ({ id }));
+};
+
+export const useConversations = create<Partial<IConversations>>(() => ({
+  conversations: undefined
+}));
+
+export const setConversations = (conversations: IConversations) => {
+  useConversations.setState(() => ({ ...conversations }));
+};
+
+export const useSocket = create<Partial<ISocket>>(() => ({
+  socket: undefined
+}));
+
+export const setSocket = (socket: Socket) => {
+  useSocket.setState(() => ({ socket }));
 };

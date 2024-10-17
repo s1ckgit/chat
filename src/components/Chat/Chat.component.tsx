@@ -1,59 +1,32 @@
 import styles from './Chat.module.css';
 import Message from './Message/Message.component';
 import { Input, CircularProgress, IconButton } from '@mui/material';
-import { fetchMessages, useChat } from '../../store';
-import { useEffect } from 'react';
+import { useChat } from '../../store';
 
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
 import { useColors, useTransitions, useTypography } from '../../theme/hooks';
 import SendIcon from '@mui/icons-material/Send';
+import { useMessagesQuery } from '../../api/hooks/messages';
 
-const mockMessages = [
-  {
-    text: 'мы делили апельсин ksrnghrsjknsroih ',
-
-  },
-  {
-    text: 'много нас',
-
-  },
-  {
-    text: 'а он один',
-
-  },
-  {
-    text: 'хуй',
-
-  },
-  {
-    text: 'хуй',
-
-  },
-];
-
-interface IChatProps {
-  id?: string;
-}
-
-const Chat = ({ id }: IChatProps) => {
+const Chat = () => {
   const colors = useColors();
   const transitions = useTransitions();
   const typography = useTypography();
 
-  useEffect(() => {
-    if(!id) return;
-    fetchMessages(id);
-  }, [id]);
+  const { id } = useChat();
 
-  const { isLoading } = useChat((state) => state);
+  const { data, isLoading, error } = useMessagesQuery(id);
+
+  console.log(data);
+  console.log(id);
 
   return (
     isLoading ? (
       <div className='loading-container'>
         <CircularProgress />
       </div>
-    ) : (
+    ) : !error ? (
       <div className={styles.chat}>
         <div className={styles['chat-bar']} style={{ borderColor: colors['ghost-light'] }}>
           <div className={styles['chat-bar-receiver']}>
@@ -87,8 +60,10 @@ const Chat = ({ id }: IChatProps) => {
         </div>
 
         <div className={styles['chat-window']}>
-          {
-            isLoading ? 'loading...' : mockMessages.map((item) => <Message text={item.text} />)
+          { 
+            data && data.messages.map((message) => {
+              return <Message text={message.content} senderID={message.senderId} timestamp={message.createdAt} />;
+            })
           }
         </div>
 
@@ -100,7 +75,7 @@ const Chat = ({ id }: IChatProps) => {
         </div>
 
       </div>
-    )
+    ) : 'Диалог не найден'
   );
 };
 

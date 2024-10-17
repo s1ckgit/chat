@@ -11,8 +11,10 @@ interface ICreateUserData {
 }
 
 export const login = async (userCredentials: IUserCredentials) => {
-  const { data } = await api.post('/login', userCredentials);
-
+  const { data } = await api.post('/login', userCredentials, {
+    withCredentials: true
+  });
+  
   return data;
 };
 

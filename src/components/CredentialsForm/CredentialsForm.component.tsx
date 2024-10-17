@@ -5,8 +5,8 @@ import * as z from 'zod';
 import { TextField, Button, Container, Typography } from '@mui/material';
 
 import styles from './CredentialsForm.module.css';
-import { Link, redirect, useNavigate } from 'react-router-dom';
-import { useNewUserMutation } from '../../api/hooks/users';
+import { Link, redirect } from 'react-router-dom';
+import { useAuthorizeUserMutation, useNewUserMutation } from '../../api/hooks/auth';
 
 // Схема валидации для логина
 const loginSchema = z.object({
@@ -25,15 +25,19 @@ const registrationSchema = z.object({
 });
 
 const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
-  const navigate = useNavigate();
-
   const LoginForm = () => {
+    const authorizeUserMutation = useAuthorizeUserMutation({
+      onSuccess: () => {
+        return redirect('/');
+      },
+    });
+
     const { register, handleSubmit, formState: { errors } } = useForm({
       resolver: zodResolver(loginSchema),
     });
   
     const onSubmit = (data: any) => {
-      console.log('Login Data:', data);
+      authorizeUserMutation.mutate(data);
     };
   
     return (
@@ -68,8 +72,8 @@ const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
   const RegistrationForm = () => {
     const newUserMutation = useNewUserMutation({
       onSuccess: (data) => {
-        console.log(data);
-        navigate('/');
+        localStorage.setItem('id', data.id);
+        window.location.reload();
       }
     });
 

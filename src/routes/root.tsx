@@ -4,10 +4,13 @@ import { useTheme } from '@mui/material/styles';
 import Sidebar from '../components/Sidebar/Sidebar.component';
 import { useLoaderData } from 'react-router-dom';
 import type { IUser } from '../types';
+import { Socket } from 'socket.io-client';
+import { setSocket } from '../store/chat';
 
 const Root = () => {
   const theme = useTheme();
-  const { userData } = useLoaderData() as { userData: IUser;};
+  const { socket } = useLoaderData() as { userData: IUser; socket: Socket};
+  setSocket(socket);
 
   return (
     <Grid sx={{ minHeight:'100vh' }} container>
@@ -15,7 +18,7 @@ const Root = () => {
         <Sidebar />
       </Grid>
       <Grid size="grow">
-        <Chat id={'1'}/>
+        <Chat />
       </Grid>
     </Grid>
   );

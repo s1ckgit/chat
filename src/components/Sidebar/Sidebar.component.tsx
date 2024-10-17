@@ -7,22 +7,36 @@ import Conversation from './Conversation/Conversation.component';
 import styles from './Sidebar.module.css';
 import { useColors, useTransitions } from '../../theme/hooks';
 import Drawer from './Drawer/Drawer.component';
-import { useState } from 'react';
+import { setConversations, useConversations, useSocket } from '../../store/chat';
+import { toggleDrawer } from '../../store/modals';
+import ContactsModal from './Drawer/ContactsModal/ContactsModal.component';
 
 
 const Sidebar = () => {
   const transitions = useTransitions();
   const colors = useColors();
+  const { socket } = useSocket();
 
-  const [isDrawerOpened, setIsDrawerOpened] = useState<boolean>(false);
+  if(socket) {
+    socket.on('connect', () => {
+      console.log('connected');
+    });
+  
+    socket.on('conversations', (data) => {
+      setConversations(data);
+    });
+  }
+
+  const { conversations } = useConversations();
 
 
   return (
     <div className={styles.root}>
-      <Drawer isOpened={isDrawerOpened} setIsOpened={setIsDrawerOpened} />
+      <ContactsModal />
+      <Drawer />
       <div className={styles.actions}>
       <IconButton 
-        onClick={() => setIsDrawerOpened(true)}
+        onClick={() => toggleDrawer()}
         sx={{ 
             '&:hover svg': {
               transition: `color`,
@@ -49,9 +63,13 @@ const Sidebar = () => {
         fullWidth
       />
       </div>
-      <div className={styles.conversations}>
-        {[1,1,1,1,1,1,1,1,1,1].map(() => <Conversation />)}
-      </div>
+      {
+        conversations && (
+        <div className={styles.conversations}>
+          {conversations.map((c) => <Conversation key={c.id} id={c.id} login={c.participants[0].login} lastMessage={c.lastMessage}/>)}
+        </div>
+        )
+      }
     </div>
   );
 };
