@@ -6,3 +6,15 @@ export const getMessages = async (id: string | undefined) => {
   
   return data;
 };
+
+export const getConversations = async () => {
+  const { data } = await api.get('/me/conversations', { withCredentials: true });
+
+  return data;
+};
+
+export const getLastMessage = async (id: string) => {
+  const { data } = await api.get(`/lastmessage/${id}`, { withCredentials: true });
+
+  return data;
+};

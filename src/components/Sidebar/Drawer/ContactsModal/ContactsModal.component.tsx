@@ -1,15 +1,32 @@
-import { Box, Button, Container, Divider, InputAdornment, Modal, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Container, Divider, InputAdornment, Modal, TextField, Typography } from "@mui/material";
 import { toggleAddContactModal, toggleContactsModal, useModals } from "../../../../store/modals";
 import SearchIcon from '@mui/icons-material/Search';
 import { useContactsQuery } from "../../../../api/hooks/users";
 import Contact from "../../Contact/Contact.component";
 import AddContactsModal from "../AddContactsModal/AddContactsModal.component";
+import { useCallback, useEffect } from "react";
+import { useSocket } from "../../../../store/chat";
 
 const ContactsModal = () => {
   const isOpened = useModals(state => state.contactsModal);
   const isAddOpened = useModals(state => state.addContactModal);
   console.log(isAddOpened);
-  const { data, isLoading } = useContactsQuery();
+  const { data, isFetching, refetch } = useContactsQuery();
+  const { socket } = useSocket();
+
+  const handleNewConversation = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  useEffect(() => {
+    if(socket) {
+      socket.on('new_conversation', handleNewConversation);
+
+      return () => {
+        socket.off('new_conversation', handleNewConversation);
+      };
+    }
+  }, [socket, handleNewConversation]);
 
   return (
       <Modal
@@ -65,13 +82,27 @@ const ContactsModal = () => {
                 />
                 <Divider />
               </Box>
-              <Box>
-                {/* {
-                  isLoading ? <CircularProgress /> : data && (
-                    data.map((contact) => <Contact />)
+              <Box 
+                sx={{
+                  overflowY: 'scroll'
+                }}
+              >
+                {
+                  isFetching ? (
+                    <Box 
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <CircularProgress />
+                    </Box>
+                  ) : data && (
+                    data.map((contact) => <Contact key={contact.id} converstaionId={contact.conversationId} id={contact.contactId} login={contact.contact.login} />)
                   )
-                } */}
-                <Contact login={""} />
+                }
               </Box>
               <Divider />
               <Box

@@ -1,21 +1,25 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import { useColors } from "../../../theme/hooks";
-import { setChatId } from "../../../store/chat";
+import { setChatId, setReceiverId, setReceiverName } from "../../../store/chat";
 import { closeAllModals } from "../../../store/modals";
 
 interface IContactComponentProps {
   login: string;
-  converstaionId?: string;
+  converstaionId: string | null;
+  id: string;
 }
 
-const ContactComponent = ({ login, converstaionId }: IContactComponentProps) => {
+const ContactComponent = ({ login, converstaionId, id }: IContactComponentProps) => {
   const colors = useColors();
-
   
   return (
     <Box 
       onClick={() => {
-        setChatId(converstaionId);
+        if(converstaionId) {
+          setChatId(converstaionId);
+        }
+        setReceiverName(login);
+        setReceiverId(id);
         closeAllModals();
       }}
       sx={{

@@ -1,9 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
 
 interface IChat {
-  id: string | undefined;
+  id: string;
+  receiverId: string;
+  receiverName: string;
 }
 
 interface IConversation {
@@ -23,7 +25,7 @@ interface IConversation {
 }
 
 interface IConversations {
-  conversations: IConversation[] | undefined
+  conversations: IConversation[]
 }
 
 interface ISocket {
@@ -35,16 +37,27 @@ export const useChat = create<Partial<IChat>>(() => ({
   id: undefined
 }));
 
-export const setChatId = (id: string | undefined) => {
-  useChat.setState(() => ({ id }));
+export const setChatId = (id: string) => {
+  useChat.setState((state) => ({ ...state, id }));
+};
+
+export const setReceiverId = (id: string) => {
+  useChat.setState((state) => ({ ...state, receiverId: id }));
+};
+
+export const setReceiverName = (name: string) => {
+  useChat.setState((state) => ({
+    ...state,
+    receiverName: name
+  }));
 };
 
 export const useConversations = create<Partial<IConversations>>(() => ({
   conversations: undefined
 }));
 
-export const setConversations = (conversations: IConversations) => {
-  useConversations.setState(() => ({ ...conversations }));
+export const setConversations = (conversations: IConversation[]) => {
+  useConversations.setState(() => ({ conversations }));
 };
 
 export const useSocket = create<Partial<ISocket>>(() => ({

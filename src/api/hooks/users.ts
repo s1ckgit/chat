@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
  
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/queryKeys";
 import { addContact, getContacts, getMyInfo } from "../services/users";
-import type { IUser } from '../../types';
+import type { IUser, IContact } from '../../types';
 import { AxiosError } from "axios";
 
 export const useUserMeQuery = () => {
@@ -13,14 +14,16 @@ export const useUserMeQuery = () => {
 };
 
 export const useContactsQuery = () => {
-  return useQuery<IUser[], AxiosError>({
+  return useQuery<IContact[], AxiosError>({
     queryKey: userKeys.contacts,
     queryFn: getContacts
   });
 };
 
-export const useAddContactMutation = () => {
+export const useAddContactMutation = ({ onSuccess, onError }: { onSuccess?: any; onError?: any; }) => {
   return useMutation<void, unknown, string>({
     mutationFn: (login) => addContact(login),
+    onSuccess,
+    onError
   });
 };

@@ -2,11 +2,14 @@ import axios from "axios";
 import { getMyInfo } from "../api/services/users";
 import { redirect } from "react-router-dom";
 import { io } from "socket.io-client";
+import { setUserId } from "../store/user";
 
 export const rootLoader = async () => {
   try {
     const userData = await getMyInfo();
-    const socket = io('/api/messages', {
+
+    setUserId(userData.id);
+    const socket = io('http://localhost:3000/api/messages', {
       query: {
         userId: userData.id
       }

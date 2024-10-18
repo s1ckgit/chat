@@ -7,27 +7,37 @@ import Conversation from './Conversation/Conversation.component';
 import styles from './Sidebar.module.css';
 import { useColors, useTransitions } from '../../theme/hooks';
 import Drawer from './Drawer/Drawer.component';
-import { setConversations, useConversations, useSocket } from '../../store/chat';
+import { useSocket } from '../../store/chat';
 import { toggleDrawer } from '../../store/modals';
 import ContactsModal from './Drawer/ContactsModal/ContactsModal.component';
+import { useCallback, useEffect } from 'react';
+import { useConversationsQuery } from '../../api/hooks/messages';
 
 
 const Sidebar = () => {
   const transitions = useTransitions();
   const colors = useColors();
   const { socket } = useSocket();
+  const { data: conversations, refetch } = useConversationsQuery();
 
-  if(socket) {
-    socket.on('connect', () => {
-      console.log('connected');
-    });
-  
-    socket.on('conversations', (data) => {
-      setConversations(data);
-    });
+  const handleNewConversations = useCallback(() => {
+    refetch();
   }
+, [refetch]);
 
-  const { conversations } = useConversations();
+  useEffect(() => {
+    if(socket) {
+      socket.on('conversations', handleNewConversations);
+      socket.on('new_conversation', handleNewConversations);
+
+      return () => {
+        socket.off('conversations', handleNewConversations);
+        socket.off('new_conversations', handleNewConversations);
+      };
+    }
+  }, [socket, handleNewConversations]);
+
+  console.log(conversations);
 
 
   return (

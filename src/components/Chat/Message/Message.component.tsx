@@ -2,6 +2,7 @@ import cn from 'classnames';
 
 import styles from './Message.module.css';
 import { useColors, useTypography } from '../../../theme/hooks';
+import { useUser } from '../../../store';
 
 interface IMessageProps {
   timestamp?: string;
@@ -12,9 +13,9 @@ interface IMessageProps {
 const Message = ({ timestamp, senderID, text }: IMessageProps) => {
   const colors = useColors();
   const typography = useTypography();
+  const { id } = useUser();
 
-  // const isInitiatorMessage = senderID === user.id;
-  const isInitiatorMessage = Math.random() * 10 > 5 ? true : false;
+  const isInitiatorMessage = senderID ===  id;
   const time = '9:17';
 
   return (

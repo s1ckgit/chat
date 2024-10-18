@@ -1,16 +1,27 @@
-import { Box, Button, Container, InputAdornment, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Container, InputAdornment, TextField, Typography } from "@mui/material";
 import { forwardRef, useState } from "react";
 import ContactsIcon from '@mui/icons-material/Contacts';
 import { useAddContactMutation } from "../../../../api/hooks/users";
 import { toggleAddContactModal } from "../../../../store/modals";
+import { useQueryClient } from "@tanstack/react-query";
+import { userKeys } from "../../../../api/queries/queryKeys";
 
 const AddContactsModal = forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof Container>>((props, ref) => {
+  const client = useQueryClient();
   const [value, setValue] = useState('');
-  const addContactMutation = useAddContactMutation();
+  const addContactMutation = useAddContactMutation({
+    onSuccess: () => {
+      toggleAddContactModal();
+      client.refetchQueries({
+        queryKey: userKeys.contacts
+      });
+    }
+  });
+
+  const { isPending } = addContactMutation;
 
   const onAdd = () => {
     addContactMutation.mutate(value);
-    toggleAddContactModal();
   };
 
   return (
@@ -69,7 +80,15 @@ const AddContactsModal = forwardRef<HTMLDivElement, React.ComponentPropsWithoutR
           fullWidth
         />
       </Box>
-      <Button onClick={onAdd} variant="text">Добавить</Button>
+      <Button 
+        onClick={onAdd} 
+        variant="text"
+        endIcon={
+          isPending ? (<CircularProgress size='1rem' />) : null
+        }
+      >
+        Добавить
+      </Button>
     </Container>
   );
 });

@@ -1,2 +1,2 @@
-export { useUser, fetchUser } from './user';
+export { useUser } from './user';
 export { useChat } from './chat';

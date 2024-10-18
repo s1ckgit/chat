@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { create } from 'zustand';
 
 interface IUser {
   name: string;
+  id: string;
 }
 
 
@@ -11,8 +12,9 @@ export const useUser = create<Partial<IUser>>(() => ({
   name: undefined
 }));
 
-export const fetchUser = async () => {
-  const res = await fetch(`/api/me`);
-  const user = await res.json();
-  useUser.setState(() => ({ ...user }));
+export const setUserId = (id: string) => {
+  useUser.setState((state) => ({
+    ...state,
+    id
+  }));
 };
