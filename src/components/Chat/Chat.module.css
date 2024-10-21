@@ -30,7 +30,6 @@
 .chat-window {
   display: grid;
   grid-auto-rows: min-content;
-  align-content: end;
   grid-template-columns: 1fr;
   row-gap: 12px;
 

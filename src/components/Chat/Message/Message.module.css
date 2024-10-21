@@ -24,6 +24,8 @@
 }
 
 .message-date {
+  display: flex;
+  align-items: center;
   padding-left: 10px;
   float:right;
 }

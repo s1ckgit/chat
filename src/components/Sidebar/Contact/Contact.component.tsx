@@ -15,9 +15,7 @@ const ContactComponent = ({ login, converstaionId, id }: IContactComponentProps)
   return (
     <Box 
       onClick={() => {
-        if(converstaionId) {
-          setChatId(converstaionId);
-        }
+        setChatId(converstaionId ?? undefined);
         setReceiverName(login);
         setReceiverId(id);
         closeAllModals();

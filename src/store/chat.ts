@@ -2,10 +2,19 @@
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
 
-interface IChat {
+interface IMessage {
+  content: string;
+  senderId: string; 
+  conversationId: string;
+  status: 'read' | 'delivered' | 'pending';
   id: string;
-  receiverId: string;
-  receiverName: string;
+}
+
+interface IChat {
+  id?: string;
+  receiverId?: string;
+  receiverName?: string;
+  pendingMessages: Map<string, IMessage>;
 }
 
 interface IConversation {
@@ -33,11 +42,14 @@ interface ISocket {
 }
 
 
-export const useChat = create<Partial<IChat>>(() => ({
-  id: undefined
+export const useChat = create<IChat>(() => ({
+  id: undefined,
+  receiverId: undefined,
+  receiverName: undefined,
+  pendingMessages: new Map()
 }));
 
-export const setChatId = (id: string) => {
+export const setChatId = (id: string | undefined) => {
   useChat.setState((state) => ({ ...state, id }));
 };
 
@@ -50,6 +62,28 @@ export const setReceiverName = (name: string) => {
     ...state,
     receiverName: name
   }));
+};
+
+export const setPendingMessage = (message: IMessage) => {
+  useChat.setState((state) => {
+    const newPendingMessages = new Map(state.pendingMessages);
+    newPendingMessages.set(message.id, message);
+    return {
+      ...state,
+      pendingMessages: newPendingMessages
+    };
+  });
+};
+
+export const deletePendingMessage = (id: string) => {
+  useChat.setState((state) => {
+    const newPendingMessages = new Map(state.pendingMessages);
+    newPendingMessages.delete(id);
+    return {
+      ...state,
+      pendingMessages: newPendingMessages
+    };
+  });
 };
 
 export const useConversations = create<Partial<IConversations>>(() => ({
