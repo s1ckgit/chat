@@ -1,4 +1,4 @@
-import { IconButton, InputAdornment, TextField } from '@mui/material';
+import { Box, CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
 
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -18,7 +18,7 @@ const Sidebar = () => {
   const transitions = useTransitions();
   const colors = useColors();
   const { socket } = useSocket();
-  const { data: conversations, refetch } = useConversationsQuery();
+  const { data: conversations, isLoading, isPlaceholderData, refetch, isFetched } = useConversationsQuery();
 
   const handleNewConversations = useCallback(() => {
     refetch();
@@ -37,11 +37,13 @@ const Sidebar = () => {
     }
   }, [socket, handleNewConversations]);
 
-  console.log(conversations);
-
-
   return (
-    <div className={styles.root}>
+    <Box 
+      sx={{
+        height: '100vh'
+      }}
+      className={styles.root}
+    >
       <ContactsModal />
       <Drawer />
       <div className={styles.actions}>
@@ -74,13 +76,27 @@ const Sidebar = () => {
       />
       </div>
       {
-        conversations && (
-        <div className={styles.conversations}>
-          {conversations.map((c) => <Conversation key={c.id} id={c.id} login={c.participants[0].login} lastMessage={c.lastMessage}/>)}
-        </div>
-        )
+        isLoading && !isPlaceholderData ? (
+        <Box className='loading-container'>
+          <CircularProgress />
+        </Box>
+        ) : 
+        conversations ? (
+          <Box
+            sx={{
+              height: '100%',
+              overflowY: 'auto'
+            }}
+            className={styles.conversations}
+           >
+            {conversations.map((c) => {
+              const receiverId = c.participants[0].id;
+              return <Conversation receiverId={receiverId} key={c.id} id={c.id} login={c.participants[0].login} lastMessage={c.lastMessage}/>;
+            })}
+          </Box>
+          ) : isFetched && <>Нет диалогов</>
       }
-    </div>
+    </Box>
   );
 };
 

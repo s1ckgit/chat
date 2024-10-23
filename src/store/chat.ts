@@ -12,6 +12,7 @@ interface IMessage {
 
 interface IChat {
   id?: string;
+  isTyping: boolean;
   receiverId?: string;
   receiverName?: string;
   pendingMessages: Map<string, IMessage>;
@@ -46,6 +47,7 @@ export const useChat = create<IChat>(() => ({
   id: undefined,
   receiverId: undefined,
   receiverName: undefined,
+  isTyping: false,
   pendingMessages: new Map()
 }));
 
@@ -75,15 +77,28 @@ export const setPendingMessage = (message: IMessage) => {
   });
 };
 
-export const deletePendingMessage = (id: string) => {
+export const deletePendingMessage = (id: string | string[]) => {
   useChat.setState((state) => {
     const newPendingMessages = new Map(state.pendingMessages);
-    newPendingMessages.delete(id);
+
+    if(Array.isArray(id)) {
+      id.forEach(id => newPendingMessages.delete(id));
+    } else {
+      newPendingMessages.delete(id);
+    }
+
     return {
       ...state,
       pendingMessages: newPendingMessages
     };
   });
+};
+
+export const setIsTyping = (bool: boolean) => {
+  useChat.setState((state) => ({
+    ...state,
+    isTyping: bool
+  }));
 };
 
 export const useConversations = create<Partial<IConversations>>(() => ({

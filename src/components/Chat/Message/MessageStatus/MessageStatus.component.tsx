@@ -4,7 +4,7 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 
 interface IMessageStatusProps {
-  status: 'pending' | 'delivered' | 'read'
+  status: 'pending' | 'delivered' | 'read';
 }
 
 const MesageStatus = ({ status }: IMessageStatusProps) => {
@@ -13,6 +13,7 @@ const MesageStatus = ({ status }: IMessageStatusProps) => {
     return (
       <CircularProgress 
         sx={{
+          order: 1,
           color: 'inherit'
         }}
         size={20}
@@ -23,6 +24,7 @@ const MesageStatus = ({ status }: IMessageStatusProps) => {
     return (
       <CheckIcon
         sx={{
+          order: 1,
           fontSize: '18px'
         }}
       />
@@ -32,6 +34,7 @@ const MesageStatus = ({ status }: IMessageStatusProps) => {
     return (
       <DoneAllIcon 
         sx={{
+          order: 1,
           fontSize: '18px'
         }}
       />

@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useLastMessageQuery } from '../../../api/hooks/messages';
-import { setChatId, setReceiverName, useSocket } from '../../../store/chat';
+import { setChatId, setReceiverId, setReceiverName, useSocket } from '../../../store/chat';
 import { useColors, useTransitions, useTypography } from '../../../theme/hooks';
 import { formatDate } from '../../../utils';
 import styles from './Conversation.module.css';
@@ -10,6 +10,7 @@ import { Avatar, Box } from '@mui/material';
 interface IConversationProps {
   id: string;
   login: string;
+  receiverId: string;
   lastMessage: {
     content: string;
     createdAt: Date;
@@ -19,7 +20,7 @@ interface IConversationProps {
   }
 }
 
-const Conversation = ({ login, lastMessage, id }: IConversationProps) => {
+const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps) => {
   const colors = useColors();
   const transitions = useTransitions();
   const typography = useTypography();
@@ -33,6 +34,7 @@ const Conversation = ({ login, lastMessage, id }: IConversationProps) => {
 
   const onClick = () => {
     setReceiverName(login);
+    setReceiverId(receiverId);
     setChatId(id);
   };
   

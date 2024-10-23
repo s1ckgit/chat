@@ -10,7 +10,6 @@ import { useSocket } from "../../../../store/chat";
 const ContactsModal = () => {
   const isOpened = useModals(state => state.contactsModal);
   const isAddOpened = useModals(state => state.addContactModal);
-  console.log(isAddOpened);
   const { data, isFetching, refetch } = useContactsQuery();
   const { socket } = useSocket();
 
@@ -33,7 +32,10 @@ const ContactsModal = () => {
         open={isOpened} 
         slotProps={{
           backdrop: {
-            onClick: toggleContactsModal
+            onClick: () => {
+              toggleContactsModal();
+              toggleAddContactModal();
+            }
           }
         }}
       >

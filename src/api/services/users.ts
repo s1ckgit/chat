@@ -16,7 +16,6 @@ export const getMyInfo = async () => {
 
 export const getContacts = async () => {
   const { data } = await api.get('/me/contacts', { withCredentials: true });
-  console.log(data);
 
   return data;
 };
