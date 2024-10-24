@@ -40,6 +40,7 @@ interface IConversations {
 
 interface ISocket {
   socket: Socket | undefined;
+  statusSocket: Socket | undefined;
 }
 
 
@@ -109,9 +110,17 @@ export const setConversations = (conversations: IConversation[]) => {
   useConversations.setState(() => ({ conversations }));
 };
 
-export const useSocket = create<Partial<ISocket>>(() => ({
-  socket: undefined
+export const useSocket = create<ISocket>(() => ({
+  socket: undefined,
+  statusSocket: undefined
 }));
+
+export const setStatusSocket = (socket: Socket) => {
+  useSocket.setState((state) => ({ 
+    ...state,
+    statusSocket: socket
+   }));
+};
 
 export const setSocket = (socket: Socket) => {
   useSocket.setState(() => ({ socket }));

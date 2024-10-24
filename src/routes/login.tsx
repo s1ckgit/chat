@@ -1,23 +1,24 @@
 import { useNavigate } from "react-router-dom";
 import CredentialsForm from "../components/CredentialsForm/CredentialsForm.component";
-import { useEffect } from "react";
 import { CircularProgress } from "@mui/material";
+import { useUserMeQuery } from "../api/hooks/users";
+import { useEffect } from "react";
 
 const LoginPage = () => {
-  const id = localStorage.getItem('id');
+  const { data: me, isLoading } = useUserMeQuery();
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(id) {
+    if(me) {
       navigate('/');
     }
-  }, [id, navigate]);
+  }, [me, navigate]);
 
   return (
     <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       {
-        !id ? <CredentialsForm variant="login" /> : <CircularProgress />
+        !me && !isLoading ? <CredentialsForm variant="login" /> : <CircularProgress />
       }
     </div>
   );

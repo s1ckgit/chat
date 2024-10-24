@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
  
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/queryKeys";
 import { addContact, getContacts, getMyInfo } from "../services/users";
 import type { IUser, IContact } from '../../types';
@@ -9,7 +9,8 @@ import { AxiosError } from "axios";
 export const useUserMeQuery = () => {
   return useQuery<IUser, AxiosError>({
     queryKey: userKeys.me,
-    queryFn: getMyInfo
+    queryFn: getMyInfo,
+    placeholderData: keepPreviousData
   });
 };
 
