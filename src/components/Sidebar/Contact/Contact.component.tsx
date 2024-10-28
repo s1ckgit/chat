@@ -1,8 +1,8 @@
 import { Avatar, Badge, Box, Typography } from "@mui/material";
 import { useColors } from "../../../theme/hooks";
-import { setChatId, setReceiverId, setReceiverName, useSocket } from "../../../store/chat";
+import { setChatId, setReceiverId, setReceiverName } from "../../../store/chat";
 import { closeAllModals } from "../../../store/modals";
-import { useCallback, useEffect, useState } from "react";
+import { useStatus } from "../../../utils/hooks";
 
 interface IContactComponentProps {
   login: string;
@@ -13,29 +13,7 @@ interface IContactComponentProps {
 const ContactComponent = ({ login, converstaionId, id }: IContactComponentProps) => {
   const colors = useColors();
 
-  const { statusSocket } = useSocket();
-
-  const [status, setStatus] = useState('');
-
-  const handleChangeStatus = useCallback(
-    ({ status }: { status: string }) => {
-      setStatus(status);
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!id) return;
-    console.log(id);
-  
-    statusSocket?.emit('get_status', { id });
-    statusSocket?.on(`status_${id}`, handleChangeStatus);
-  
-    return () => {
-      statusSocket?.off(`status_${id}`, handleChangeStatus);
-      statusSocket?.emit('get_status_off', { id });
-    };
-  }, [id, statusSocket, handleChangeStatus]);
+  const status = useStatus(id);
 
   if(status === '') return;
   

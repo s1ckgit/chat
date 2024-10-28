@@ -20,22 +20,29 @@ const Sidebar = () => {
   const { socket } = useSocket();
   const { data: conversations, isLoading, isPlaceholderData, refetch, isFetched } = useConversationsQuery();
 
-  const handleNewConversations = useCallback(() => {
+  const handleGetConversations = useCallback(() => {
     refetch();
   }
-, [refetch]);
+  , [refetch]);
+
+  const handleNewConversation = useCallback(({ id }: { id: string }) => {
+    socket?.emit('new_conversation', {
+      id
+    });
+    refetch();
+  }, [refetch, socket]);
 
   useEffect(() => {
     if(socket) {
-      socket.on('conversations', handleNewConversations);
-      socket.on('new_conversation', handleNewConversations);
+      socket.on('conversations', handleGetConversations);
+      socket.on('new_conversation', handleNewConversation);
 
       return () => {
-        socket.off('conversations', handleNewConversations);
-        socket.off('new_conversations', handleNewConversations);
+        socket.off('conversations', handleGetConversations);
+        socket.off('new_conversation', handleNewConversation);
       };
     }
-  }, [socket, handleNewConversations]);
+  }, [socket, handleNewConversation, handleGetConversations]);
 
   return (
     <Box 

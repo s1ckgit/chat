@@ -16,7 +16,7 @@ export const useConversationsQuery = () => {
     enabled: false,
     queryFn: getConversations,
     queryKey: messagesKeys.conversations,
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
   });
 };
 

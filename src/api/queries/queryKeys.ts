@@ -1,5 +1,5 @@
 export const userKeys = {
-  me: ['user', 'me'] as const,
+  me: (id: string | null) => ['user', 'me', id] as const,
   details: (id: number) => ['user', id] as const,
   contacts: ['contacts'] as const,
 };

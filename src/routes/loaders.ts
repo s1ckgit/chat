@@ -8,16 +8,16 @@ import { setSocket, setStatusSocket } from "../store/chat";
 export const rootLoader = async () => {
   try {
     const userData = await getMyInfo();
-    const socket = io('http://localhost:3000/api/messages', {
-      query: {
-        userId: userData.id 
-      }
-    });
-    const statusSocket = io('http://localhost:3000/api/statuses');
-
     if (!userData || !userData.id) {
       return redirect('/login');
     }
+    
+    const socket = io('http://localhost:3000/api/messages', {
+      query: {
+        userId: userData?.id 
+      }
+    });
+    const statusSocket = io('http://localhost:3000/api/statuses');
 
     setUserId(userData.id);
     setSocket(socket);

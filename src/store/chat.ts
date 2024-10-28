@@ -18,26 +18,6 @@ interface IChat {
   pendingMessages: Map<string, IMessage>;
 }
 
-interface IConversation {
-  id: string;
-    participants: {
-      login: string;
-    }[];
-    lastMessage: {
-      createdAt: Date;
-      content: string;
-      sender: {
-          id: string;
-          login: string;
-          password: string;
-      };
-    }
-}
-
-interface IConversations {
-  conversations: IConversation[]
-}
-
 interface ISocket {
   socket: Socket | undefined;
   statusSocket: Socket | undefined;
@@ -100,14 +80,6 @@ export const setIsTyping = (bool: boolean) => {
     ...state,
     isTyping: bool
   }));
-};
-
-export const useConversations = create<Partial<IConversations>>(() => ({
-  conversations: undefined
-}));
-
-export const setConversations = (conversations: IConversation[]) => {
-  useConversations.setState(() => ({ conversations }));
 };
 
 export const useSocket = create<ISocket>(() => ({

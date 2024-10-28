@@ -9,6 +9,7 @@ import styles from './Drawer.module.css';
 import { useColors, useTypography } from "../../../theme/hooks";
 import { useState } from "react";
 import { toggleContactsModal, toggleDrawer, useModals } from "../../../store/modals";
+import { useLogoutMutation, useUserMeQuery } from "../../../api/hooks/users";
 
 const Drawer = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -16,6 +17,20 @@ const Drawer = () => {
 
   const typography = useTypography();
   const colors = useColors();
+
+  const userId = localStorage.getItem('id');
+  const { data: me } = useUserMeQuery(userId);
+  const logoutMutation = useLogoutMutation({
+    onSuccess: () => {
+      localStorage.removeItem('id');
+      window.location.reload();
+    },
+    onError: (e: unknown) => console.error(e)
+  });
+
+  const onLogout = () => {
+    logoutMutation.mutate();
+  };
 
   const isOpened = useModals(state => state.drawer);
 
@@ -32,7 +47,7 @@ const Drawer = () => {
       <div className={styles.drawer}>
         <div className={styles['drawer-top']}>
           <Avatar src='https://www.drivetest.de/wp-content/uploads/2019/08/drivetest-avatar-m.png' />
-          <p style={{ ...typography.name }}>name</p>
+          <p style={{ ...typography.name }}>{me?.login}</p>
         </div>
         <Divider sx={{ color: colors['ghost-light'] }} />
         <div className={styles['drawer-actions']}>
@@ -58,6 +73,17 @@ const Drawer = () => {
             Тёмный режим
           </Button>
         </div>
+
+        <Button
+          variant="text"
+          sx={{
+            color: 'red',
+            marginTop: 'auto'
+          }}
+          onClick={onLogout}
+        >
+          Выйти
+        </Button>
       </div>
     </MUIDrawer>
   );

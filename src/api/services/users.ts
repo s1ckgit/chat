@@ -1,6 +1,8 @@
+import { isAxiosError } from 'axios';
 import { IUser } from '../../types';
 import api from '../client';
 
+const controller = new AbortController();
 
 export const getUserInfo = async (userId: string) => {
   const { data } = await api.get(`/user/${userId}`);
@@ -9,9 +11,17 @@ export const getUserInfo = async (userId: string) => {
 };
 
 export const getMyInfo = async () => {
-  const { data } = await api.get<IUser>('/me', { timeout: 1000 });
-  
-  return data;
+   try {
+    const { data } = await api.get<IUser>('/me', {
+      signal: controller.signal
+    });
+    return data;
+  } catch (error) {
+    if(isAxiosError(error) && error.status === 401) {
+      controller.abort();
+    }
+    return null;
+  }
 };
 
 export const getContacts = async () => {
