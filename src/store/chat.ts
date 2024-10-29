@@ -1,26 +1,13 @@
  
 import { create } from 'zustand';
-import { Socket } from 'socket.io-client';
-
-interface IMessage {
-  content: string;
-  senderId: string; 
-  conversationId: string;
-  status: 'read' | 'delivered' | 'pending';
-  id: string;
-}
+import { IPendingMessage } from '../types';
 
 interface IChat {
   id?: string;
   isTyping: boolean;
   receiverId?: string;
   receiverName?: string;
-  pendingMessages: Map<string, IMessage>;
-}
-
-interface ISocket {
-  socket: Socket | undefined;
-  statusSocket: Socket | undefined;
+  pendingMessages: Map<string, IPendingMessage>;
 }
 
 
@@ -47,7 +34,7 @@ export const setReceiverName = (name: string) => {
   }));
 };
 
-export const setPendingMessage = (message: IMessage) => {
+export const setPendingMessage = (message: IPendingMessage) => {
   useChat.setState((state) => {
     const newPendingMessages = new Map(state.pendingMessages);
     newPendingMessages.set(message.id, message);
@@ -80,20 +67,4 @@ export const setIsTyping = (bool: boolean) => {
     ...state,
     isTyping: bool
   }));
-};
-
-export const useSocket = create<ISocket>(() => ({
-  socket: undefined,
-  statusSocket: undefined
-}));
-
-export const setStatusSocket = (socket: Socket) => {
-  useSocket.setState((state) => ({ 
-    ...state,
-    statusSocket: socket
-   }));
-};
-
-export const setSocket = (socket: Socket) => {
-  useSocket.setState(() => ({ socket }));
 };

@@ -5,8 +5,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useColors, useTransitions, useTypography } from "../../../theme/hooks";
 import MessageTyping from "../../MessageTyping/MessageTyping.component";
 import { useEffect, useRef, useState } from "react";
-import { setIsTyping, useSocket } from "../../../store/chat";
+import { setIsTyping } from "../../../store/chat";
 import { useContactsQuery } from "../../../api/hooks/users";
+import { useSocket } from "../../../store/socket";
 
 const ChatBar = () => {
   const colors = useColors();
@@ -23,9 +24,9 @@ const ChatBar = () => {
   const typingTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const handleTyping = ({ userId }: { userId: string }) => {
+    const handleTyping = ({ userId }: { userId: User['id'] }) => {
       if(userId !== id) {
-        const name = contacts?.find(c => c.contactId === userId)?.contact.login;
+        const name = contacts?.find(c => c.contactId === userId)?.contact?.login;
         setTypingName(name!);
         setIsTyping(true);
 

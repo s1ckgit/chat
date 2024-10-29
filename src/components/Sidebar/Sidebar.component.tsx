@@ -7,7 +7,7 @@ import Conversation from './Conversation/Conversation.component';
 import styles from './Sidebar.module.css';
 import { useColors, useTransitions } from '../../theme/hooks';
 import Drawer from './Drawer/Drawer.component';
-import { useSocket } from '../../store/chat';
+import { useSocket } from '../../store/socket';
 import { toggleDrawer } from '../../store/modals';
 import ContactsModal from './Drawer/ContactsModal/ContactsModal.component';
 import { useCallback, useEffect } from 'react';

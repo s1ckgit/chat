@@ -1,18 +1,17 @@
 import { isAxiosError } from 'axios';
-import { IUser } from '../../types';
 import api from '../client';
 
 const controller = new AbortController();
 
-export const getUserInfo = async (userId: string) => {
-  const { data } = await api.get(`/user/${userId}`);
+export const getUserInfo = async (userId: User['id']) => {
+  const { data } = await api.get<User>(`/user/${userId}`);
 
   return data;
 };
 
 export const getMyInfo = async () => {
    try {
-    const { data } = await api.get<IUser>('/me', {
+    const { data } = await api.get<User>('/me', {
       signal: controller.signal
     });
     return data;
@@ -25,12 +24,12 @@ export const getMyInfo = async () => {
 };
 
 export const getContacts = async () => {
-  const { data } = await api.get('/me/contacts');
+  const { data } = await api.get<Contact[]>('/me/contacts');
 
   return data;
 };
 
-export const addContact = async (login: string) => {
+export const addContact = async (login: User['login']) => {
   const { data } = await api.post('/contacts/add', { login });
 
   return data;

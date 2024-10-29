@@ -1,14 +1,5 @@
+import type { ICreateUserData, IUserCredentials } from '../../types';
 import api from '../client';
-
-interface IUserCredentials {
-  login: string;
-  password: string;
-}
-
-interface ICreateUserData {
-  login: string;
-  password: string;
-}
 
 export const login = async (userCredentials: IUserCredentials) => {
   const { data } = await api.post('/login', userCredentials);

@@ -1,18 +1,21 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getConversations, getLastMessage, getMessages } from "../services/messages";
 import { messagesKeys } from "../queries/queryKeys";
+import type { AxiosError } from "axios";
+import { addMessages, useMessages } from "../../store/messages";
 
 
-export const useMessagesQuery = (id: string | undefined) => {
-  return useQuery({
+export const useMessagesQuery = (id: Conversation['id'] | undefined) => {
+  return useQuery<Message[] | null, AxiosError>({
     queryKey: messagesKeys.id(id),
     queryFn: () => getMessages(id),
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
+    enabled: !!id
   });
 };
 
 export const useConversationsQuery = () => {
-  return useQuery({
+  return useQuery<Conversation[], AxiosError>({
     enabled: false,
     queryFn: getConversations,
     queryKey: messagesKeys.conversations,
@@ -20,8 +23,8 @@ export const useConversationsQuery = () => {
   });
 };
 
-export const useLastMessageQuery = (id: string) => {
-  return useQuery({
+export const useLastMessageQuery = (id: Conversation['id']) => {
+  return useQuery<Message, AxiosError>({
     enabled: false,
     queryKey: messagesKeys.lastMessagge(id),
     queryFn: () => getLastMessage(id)

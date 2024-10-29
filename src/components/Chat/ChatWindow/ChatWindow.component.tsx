@@ -1,38 +1,39 @@
 import { Box, Button, CircularProgress } from "@mui/material";
 import { useMessagesQuery } from "../../../api/hooks/messages";
 import { useChat } from "../../../store";
-import { deletePendingMessage, setChatId, useSocket } from "../../../store/chat";
+import { deletePendingMessage, setChatId } from "../../../store/chat";
+import { useSocket } from '../../../store/socket';
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import Message from "../Message/Message.component";
-import { useContactsQuery } from "../../../api/hooks/users";
+import { useContactsQuery, useUserMeQuery } from "../../../api/hooks/users";
 import { toggleContactsModal } from "../../../store/modals";
+import { useAddMessageToList, useConversationReadMessages } from "../../../utils/hooks";
 
 const ChatWindow = () => {
   const { socket } = useSocket();
   const { id, pendingMessages, receiverId } = useChat();
 
-
-  const { data, isLoading, refetch, isPlaceholderData } = useMessagesQuery(id);
+  const { data, isFetching } = useMessagesQuery(id);
   const { data: contacts, isLoading: contactsLoading } = useContactsQuery();
+  const { data: user } = useUserMeQuery();
 
+  const markMessageAsRead = useConversationReadMessages();
+  const addMessage = useAddMessageToList();
 
   const messages = useMemo(() => {
-    return [...(data?.messages || []), ...Array.from(pendingMessages.values())];
-  }, [data, pendingMessages]);
-
-  const deliveredMessages = useMemo(() => {
-    if (!data?.messages) return [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return data.messages.filter((message: { id: string; }) => pendingMessages.get(message.id)).map((message: { id: any; }) => message.id);
+    return [...(data || []), ...Array.from(pendingMessages.values())];
   }, [data, pendingMessages]);
 
   const chatWindowRef = useRef<HTMLDivElement>(null);
 
   const handleNewMessage = useCallback(
-    async () => {
-      await refetch();
+    async ({ senderId, message }: { senderId: string; message: Message }) => {
+      if(senderId === user?.id) {
+        deletePendingMessage(message.id);
+      }
+      addMessage({ conversationId: id as string, message });
     },
-    [refetch]
+    [addMessage, id, user?.id]
   );
 
   const handleNewConversation = useCallback(
@@ -44,33 +45,28 @@ const ChatWindow = () => {
     [handleNewMessage, socket]
   );
 
+  const handleNewConversationOpened = useCallback((data: { id: string; }) => {
+    setChatId(data.id);
+  }, []);
+
 
   useEffect(() => {
     if(socket) {
-
       if(id) {
         socket.on(`new_message_${id}`, handleNewMessage);
       }
       else {
-        socket.on('new_conversation_opened', async (data: { id: string; }) => {
-          setChatId(data.id);
-        });
+        socket.on('new_conversation_opened', handleNewConversationOpened);
       }
-      
       socket.on('new_conversation', handleNewConversation);
 
       return () => {
+        socket.off('new_conversation_opened', handleNewConversationOpened);
         socket.off(`new_conversation`, handleNewConversation);
         socket.off(`new_message_${id}`, handleNewMessage);
       };
     }
-  }, [socket, handleNewConversation, handleNewMessage, id]);
-
-  useEffect(() => {
-    if(deliveredMessages.length) {
-      deletePendingMessage(deliveredMessages);
-    }
-  }, [deliveredMessages]);
+  }, [socket, handleNewConversation, handleNewMessage, id, handleNewConversationOpened]);
 
   useEffect(() => {
     if (chatWindowRef.current) {
@@ -79,7 +75,7 @@ const ChatWindow = () => {
   }, [messages]);
 
   return (
-    isLoading && !isPlaceholderData ? (
+    isFetching ? (
       <Box className='loading-container'>
         <CircularProgress />
       </Box>
@@ -171,7 +167,7 @@ const ChatWindow = () => {
               <Box sx={{ height: '100%' }} />
               { 
                 messages && messages.map((message: { content: string; senderId: string | undefined; createdAt: Date; id: string; status: 'pending' | 'delivered' | 'read'; conversationId: string; }) => {
-                  return <Message conversationId={message.conversationId} id={message.id} status={message.status} key={message.id + message.status} text={message.content} senderID={message.senderId} createdAt={message.createdAt} />;
+                  return <Message onRead={markMessageAsRead} conversationId={message.conversationId} id={message.id} status={message.status} key={message.id + message.status} text={message.content} senderID={message.senderId} createdAt={message.createdAt} />;
                 })
               }
             </>

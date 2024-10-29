@@ -5,12 +5,12 @@ import { closeAllModals } from "../../../store/modals";
 import { useStatus } from "../../../utils/hooks";
 
 interface IContactComponentProps {
-  login: string;
-  converstaionId: string | null;
-  id: string;
+  login: User['login'];
+  conversationId: Contact['conversationId'];
+  id: User['id']
 }
 
-const ContactComponent = ({ login, converstaionId, id }: IContactComponentProps) => {
+const ContactComponent = ({ login, conversationId, id }: IContactComponentProps) => {
   const colors = useColors();
 
   const status = useStatus(id);
@@ -21,7 +21,7 @@ const ContactComponent = ({ login, converstaionId, id }: IContactComponentProps)
     <Box 
       onClick={() => {
         console.log(id);
-        setChatId(converstaionId ?? undefined);
+        setChatId(conversationId ?? undefined);
         setReceiverName(login);
         setReceiverId(id);
         closeAllModals();

@@ -5,7 +5,7 @@ import { useContactsQuery } from "../../../../api/hooks/users";
 import Contact from "../../Contact/Contact.component";
 import AddContactsModal from "../AddContactsModal/AddContactsModal.component";
 import { useCallback, useEffect } from "react";
-import { useSocket } from "../../../../store/chat";
+import { useSocket } from "../../../../store/socket";
 
 const ContactsModal = () => {
   const isOpened = useModals(state => state.contactsModal);
@@ -102,7 +102,7 @@ const ContactsModal = () => {
                       <CircularProgress />
                     </Box>
                   ) : data && (
-                    data.map((contact) => <Contact key={contact.id} converstaionId={contact.conversationId} id={contact.contactId} login={contact.contact.login} />)
+                    data.map((contact) => <Contact key={contact.id} conversationId={contact.conversationId} id={contact.contactId} login={contact.contact.login} />)
                   )
                 }
               </Box>

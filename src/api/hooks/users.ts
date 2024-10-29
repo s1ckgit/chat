@@ -1,16 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
- 
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/queryKeys";
 import { addContact, getContacts, getMyInfo } from "../services/users";
-import type { IUser, IContact } from '../../types';
 import { AxiosError } from "axios";
 import { logout } from "../services/auth";
+import type { IMutationCallbacks } from "../../types";
 
 export const useUserMeQuery = () => {
   const id = localStorage.getItem('id');
-  console.log(id);
-  return useQuery<IUser | null, AxiosError>({
+
+  return useQuery<User | null, AxiosError>({
     queryKey: userKeys.me(id),
     queryFn: getMyInfo,
     placeholderData: keepPreviousData
@@ -18,13 +16,13 @@ export const useUserMeQuery = () => {
 };
 
 export const useContactsQuery = () => {
-  return useQuery<IContact[], AxiosError>({
+  return useQuery<Contact[], AxiosError>({
     queryKey: userKeys.contacts,
     queryFn: getContacts
   });
 };
 
-export const useAddContactMutation = ({ onSuccess, onError }: { onSuccess?: any; onError?: any; }) => {
+export const useAddContactMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
   return useMutation<void, unknown, string>({
     mutationFn: (login) => addContact(login),
     onSuccess,
@@ -32,7 +30,7 @@ export const useAddContactMutation = ({ onSuccess, onError }: { onSuccess?: any;
   });
 };
 
-export const useLogoutMutation = ({ onSuccess, onError }: { onSuccess?: any; onError?: any; }) => {
+export const useLogoutMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
   return useMutation({
     mutationFn: logout,
     onSuccess,

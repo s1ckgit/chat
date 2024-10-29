@@ -2,28 +2,31 @@ import { Box, IconButton, Input } from "@mui/material";
 import { ChangeEvent, useCallback, useState } from "react";
 import SendIcon from '@mui/icons-material/Send';
 import { useColors } from "../../../theme/hooks";
-import { useChat, useUser } from "../../../store";
-import { setPendingMessage, useSocket } from "../../../store/chat";
+import { useChat } from "../../../store";
+import { setPendingMessage } from "../../../store/chat";
 import { v4 as uuidv4 } from 'uuid';
 import throttle from 'lodash.throttle';
+import { useUserMeQuery } from "../../../api/hooks/users";
+import { useSocket } from "../../../store/socket";
+import { IPendingMessage } from "../../../types";
 
 const ChatInput = () => {
   const colors = useColors();
 
   const { socket } = useSocket();
+  const { data: user } = useUserMeQuery();
   const { id, receiverId } = useChat();
-  const { id: userId } = useUser();
 
   const [message, setMessage] = useState('');
 
   const emitTyping = useCallback(() => {
     if (socket) {
       socket.emit(`typing`, {
-        userId,
+        userId: user?.id,
         conversationId: id
       });
     }
-  }, [socket, userId, id]);
+  }, [socket, user?.id, id]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const throttledTyping = useCallback(throttle(emitTyping, 500), [emitTyping]);
@@ -38,14 +41,14 @@ const ChatInput = () => {
       const messageId = uuidv4();
       const createdAt = new Date();
 
-      const newMessage = {
+      const newMessage: IPendingMessage = {
         id: messageId,
         createdAt,
-        status: 'pending' as const,
+        status: 'pending',
         conversationId: id as string,
         content: message,
-        senderId: userId as string,
-        receiverId
+        senderId: user?.id as string,
+        receiverId: receiverId as string
       };
 
       setPendingMessage(newMessage);

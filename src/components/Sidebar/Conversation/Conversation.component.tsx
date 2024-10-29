@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { setChatId, setReceiverId, setReceiverName, useSocket } from '../../../store/chat';
+import { setChatId, setReceiverId, setReceiverName } from '../../../store/chat';
 import { useColors, useTransitions, useTypography } from '../../../theme/hooks';
 import { formatDate } from '../../../utils';
 import styles from './Conversation.module.css';
@@ -7,18 +7,13 @@ import styles from './Conversation.module.css';
 import { Avatar, Badge, Box } from '@mui/material';
 import { useStatus, useUnreadCount, useUpdateLastMessage } from '../../../utils/hooks';
 import { useUserMeQuery } from '../../../api/hooks/users';
+import { useSocket } from '../../../store/socket';
 
 interface IConversationProps {
   id: string;
   login: string;
   receiverId: string;
-  lastMessage: {
-    content: string;
-    createdAt: Date;
-    sender: {
-      login: string;
-    }
-  }
+  lastMessage?: Message
 }
 
 const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps) => {
@@ -30,14 +25,16 @@ const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps
   const { data: user } = useUserMeQuery();
 
   const updateLastMessage = useUpdateLastMessage();
-  const { count, request_count } = useUnreadCount({ 
-    conversationId: id,
-    userId: user?.id as string
-  });
+  const count = useUnreadCount(id);
   
-  const { createdAt, content } = lastMessage;
+  let createdAt;
+  let content;
+  if(lastMessage) {
+    createdAt = lastMessage.createdAt;
+    content = lastMessage.content;
+  }
   const status = useStatus(receiverId);
-  const date = formatDate(createdAt);
+  const date = createdAt ? formatDate(createdAt) : null;
 
   const onClick = () => {
     setReceiverName(login);
@@ -45,11 +42,9 @@ const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps
     setChatId(id);
   };
   
-  const onNewMessage = useCallback(({ message }) => {
-    request_count();
+  const onNewMessage = useCallback(({ message }: { message: Message }) => {
     updateLastMessage({ conversationId: id, lastMessage: message });
-  }, [id, request_count, updateLastMessage]);
-
+  }, [id, updateLastMessage]);
 
   useEffect(() => {
     if(socket) {

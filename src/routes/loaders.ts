@@ -3,7 +3,7 @@ import { getMyInfo } from "../api/services/users";
 import { redirect } from "react-router-dom";
 import { io } from "socket.io-client";
 import { setUserId } from "../store/user";
-import { setSocket, setStatusSocket } from "../store/chat";
+import { setSocket, setStatusSocket } from "../store/socket";
 
 export const rootLoader = async () => {
   try {
