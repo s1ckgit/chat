@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/queryKeys";
-import { addContact, getContacts, getMyInfo } from "../services/users";
+import { addContact, changeUserData, getContacts, getMyInfo } from "../services/users";
 import { AxiosError } from "axios";
 import { logout } from "../services/auth";
 import type { IMutationCallbacks } from "../../types";
@@ -33,6 +33,14 @@ export const useAddContactMutation = ({ onSuccess, onError }: IMutationCallbacks
 export const useLogoutMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
   return useMutation({
     mutationFn: logout,
+    onSuccess,
+    onError
+  });
+};
+
+export const useChangeUserDataMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
+  return useMutation({
+    mutationFn: (userData) => changeUserData(userData),
     onSuccess,
     onError
   });

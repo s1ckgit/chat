@@ -4,50 +4,18 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
 import { useColors, useTransitions, useTypography } from "../../../theme/hooks";
 import MessageTyping from "../../MessageTyping/MessageTyping.component";
-import { useEffect, useRef, useState } from "react";
-import { setIsTyping } from "../../../store/chat";
-import { useContactsQuery } from "../../../api/hooks/users";
-import { useSocket } from "../../../store/socket";
+import { useIsTyping, useStatus } from "../../../utils/hooks";
 
 const ChatBar = () => {
   const colors = useColors();
   const transitions = useTransitions();
   const typography = useTypography();
 
-  const { receiverName, receiverId, id: chatId, isTyping } = useChat();
+  const { receiverName, id: chatId } = useChat();
   const { id } = useUser();
-  const { socket } = useSocket();
-  const { data: contacts } = useContactsQuery();
 
-  const [typingName, setTypingName] = useState('');
-
-  const typingTimeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const handleTyping = ({ userId }: { userId: User['id'] }) => {
-      if(userId !== id) {
-        const name = contacts?.find(c => c.contactId === userId)?.contact?.login;
-        setTypingName(name!);
-        setIsTyping(true);
-
-        if(typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
-  
-        typingTimeoutRef.current = setTimeout(() => {
-          setIsTyping(false);
-        }, 1000);
-      }
-
-    };
-
-    socket?.on(`typing_${chatId}`, handleTyping);
-
-    return () => {
-      socket?.off(`typing_${chatId}`, handleTyping);
-    };
-
-  }, [socket, id, chatId, contacts, receiverId]);
+  const status = useStatus(id!);
+  const isTyping = useIsTyping(chatId!);
 
   return (
     <Box 
@@ -83,7 +51,7 @@ const ChatBar = () => {
           }}
         >
           {
-            isTyping ? <MessageTyping name={typingName} /> : 'last seen recently'
+            isTyping ? <MessageTyping /> : status
           }
         </Typography>
       </Box>

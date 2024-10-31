@@ -4,7 +4,7 @@ import styles from './Message.module.css';
 import { useColors, useTypography } from '../../../theme/hooks';
 import { format } from 'date-fns';
 import MessageStatus from './MessageStatus/MessageStatus.component';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useInView } from "react-intersection-observer";
 import { useUserMeQuery } from '../../../api/hooks/users';
 
@@ -26,19 +26,11 @@ const Message = ({ createdAt, senderID, text, status, id, onRead }: IMessageProp
 
   const isInitiatorMessage = senderID ===  user?.id;
   const date = format(createdAt, 'HH:mm');
-  const [statusState, setStatusState] = useState(status);
   const { ref, inView } = useInView();
-
-  // const oneMessageRead = useCallback(() => {
-  //   setStatusState('read');
-  //   request_count();
-    
-  // }, [request_count]);
 
   useEffect(() => {
     if (inView && senderID !== user?.id && status !== 'read') {
       onRead(id);
-      setStatusState('read');
     }
   }, [inView, id, senderID, user?.id, status, onRead]);
 
@@ -56,7 +48,7 @@ const Message = ({ createdAt, senderID, text, status, id, onRead }: IMessageProp
       <p style={{ ...typography['messages-text'] }} className={styles['message-text']}>
         {text}
         <span className={styles['message-date']} style={{ ...typography['messages-date'], color: isInitiatorMessage ? colors['messages-initiator-date'] : colors['messages-receiver-date'] }}>
-          <MessageStatus status={statusState} />
+          <MessageStatus status={status} />
           {date}
         </span>
       </p>

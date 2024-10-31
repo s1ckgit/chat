@@ -7,6 +7,7 @@ declare global {
     password: string;
     refreshToken: string;
     status: string;
+    avatarSrc?: string;
     contacts?: Contact[];
     contactOf?: Contact[];
     conversations?: Conversation[];

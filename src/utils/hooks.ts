@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useChat } from "../store/chat";
 import { useQueryClient } from "@tanstack/react-query";
-import { messagesKeys } from "../api/queries/queryKeys";
+import { messagesKeys, userKeys } from "../api/queries/queryKeys";
 import debounce from 'lodash.debounce';
 import { useSocket } from "../store/socket";
+import { useUserMeQuery } from "../api/hooks/users";
+import { formatStatus } from ".";
 
 
 export const useStatus = (id: string) => {
@@ -12,7 +14,7 @@ export const useStatus = (id: string) => {
 
   const handleChangeStatus = useCallback(
     ({ status }: { status: string }) => {
-      setStatus(status);
+      setStatus(formatStatus(status));
     },
     []
   );
@@ -112,3 +114,72 @@ export function useConversationReadMessages() {
 
   return markMessageAsRead;
 }
+
+export const useMarkMessageAsRead = () => {
+  const queryClient = useQueryClient();
+
+  const markMessageAsRead = useCallback(({ conversationId, ids }: { conversationId: string; ids: string[] }) => {
+    queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: Message[] | undefined) => {
+      if (!oldMessages) return;
+
+      return oldMessages.map((m) => {
+        if (ids.includes(m.id)) {
+          return { ...m, status: 'read' };
+        }
+        return m;
+      });
+    });
+  }, [queryClient]);
+
+  return markMessageAsRead;
+};
+
+export const useChangeAvatarSrc = () => {
+  const queryClient = useQueryClient();
+  const { data: user } = useUserMeQuery();
+
+  const changeAvatarSrc = useCallback((avatarSrc: string) => {
+    queryClient.setQueryData(userKeys.me(user!.id), (oldData: User) => {
+      return {
+        ...oldData,
+        avatarSrc
+      };
+    });
+  }, [queryClient, user]);
+
+  return changeAvatarSrc;
+};
+
+export const useIsTyping = (chatId: string) => {
+  const [isTyping, setIsTyping] = useState<boolean>();
+  const typingTimeoutRef = useRef<number | null>(null);
+
+  const { socket } = useSocket();
+  const { data: user } = useUserMeQuery();
+
+  useEffect(() => {
+    const handleTyping = ({ userId }: { userId: User['id'] }) => {
+      if(userId !== user?.id) {
+        setIsTyping(true);
+
+        if(typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+  
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+        }, 1000);
+      }
+
+    };
+
+    socket?.on(`typing_${chatId}`, handleTyping);
+
+    return () => {
+      socket?.off(`typing_${chatId}`, handleTyping);
+    };
+
+  }, [chatId, socket, user?.id]);
+
+  return isTyping;
+};

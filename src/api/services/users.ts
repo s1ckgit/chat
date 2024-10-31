@@ -34,3 +34,9 @@ export const addContact = async (login: User['login']) => {
 
   return data;
 };
+
+export const changeUserData = async (userData: Partial<User>) => {
+  const { data } = await api.post('/me', userData);
+
+  return data;
+};

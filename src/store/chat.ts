@@ -4,7 +4,6 @@ import { IPendingMessage } from '../types';
 
 interface IChat {
   id?: string;
-  isTyping: boolean;
   receiverId?: string;
   receiverName?: string;
   pendingMessages: Map<string, IPendingMessage>;
@@ -15,7 +14,6 @@ export const useChat = create<IChat>(() => ({
   id: undefined,
   receiverId: undefined,
   receiverName: undefined,
-  isTyping: false,
   pendingMessages: new Map()
 }));
 

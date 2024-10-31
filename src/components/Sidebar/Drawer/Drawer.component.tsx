@@ -1,4 +1,7 @@
-import { Avatar, Button, Divider, Drawer as MUIDrawer } from "@mui/material";
+import { Avatar, Box, Button, Divider, IconButton, Drawer as MUIDrawer } from "@mui/material";
+import { v4 as uuidv4 } from 'uuid';
+
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
@@ -6,20 +9,25 @@ import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ContactsIcon from '@mui/icons-material/Contacts';
 
 import styles from './Drawer.module.css';
-import { useColors, useTypography } from "../../../theme/hooks";
-import { useState } from "react";
+import { useColors, useTransitions, useTypography } from "../../../theme/hooks";
+import { ChangeEvent, useState } from "react";
 import { toggleContactsModal, toggleDrawer, useModals } from "../../../store/modals";
-import { useLogoutMutation, useUserMeQuery } from "../../../api/hooks/users";
+import { useChangeUserDataMutation, useLogoutMutation, useUserMeQuery } from "../../../api/hooks/users";
+import supabase from "../../../utils/supabase";
+import { useChangeAvatarSrc } from "../../../utils/hooks";
 
 const Drawer = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const onDarkModeToggle = () => setTheme((prev) => prev === 'light' ? 'dark' : 'light');
+  const [isHover, setIsHover] = useState(false);
 
   const typography = useTypography();
   const colors = useColors();
+  const transitions = useTransitions();
 
-  const userId = localStorage.getItem('id');
-  const { data: me } = useUserMeQuery(userId);
+  const { data: me } = useUserMeQuery();
+  const changeUserDataMutation = useChangeUserDataMutation({});
+  const changeAvatarSrc = useChangeAvatarSrc();
   const logoutMutation = useLogoutMutation({
     onSuccess: () => {
       localStorage.removeItem('id');
@@ -29,10 +37,35 @@ const Drawer = () => {
   });
 
   const onLogout = () => {
-    logoutMutation.mutate();
+    logoutMutation.mutate({});
   };
 
   const isOpened = useModals(state => state.drawer);
+
+  const onUploadAvatar = async (e: ChangeEvent<HTMLInputElement>) => {
+    if(e.target.files?.length) {
+      const file = e.target.files[0];
+      const avatarId = uuidv4();
+      const fileName = `avatar-${me?.id}-${avatarId}`;
+
+      const { error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, {
+          upsert: true
+        });
+
+        if (error) {
+          console.error("Ошибка при загрузке:", error.message);
+        } else {
+          const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+          const publicUrl = data.publicUrl;
+          await changeUserDataMutation.mutateAsync({
+            avatarSrc: publicUrl
+          });
+          changeAvatarSrc(publicUrl);
+        }
+    }
+  };
 
   return (
     <MUIDrawer 
@@ -46,7 +79,52 @@ const Drawer = () => {
     >
       <div className={styles.drawer}>
         <div className={styles['drawer-top']}>
-          <Avatar src='https://www.drivetest.de/wp-content/uploads/2019/08/drivetest-avatar-m.png' />
+          <Box
+            component='div'
+            onMouseEnter={() => setIsHover(true)}
+            onMouseLeave={() => setIsHover(false)}
+            sx={{
+              overflow: 'hidden',
+              width: 'min-content',
+              position: 'relative',
+              borderRadius: '100%'
+            }}
+          >
+            <Avatar
+              sx={{ width: 96, height: 96 }} 
+              src={me?.avatarSrc}
+            />
+
+            <Box
+              sx={{
+                position: 'absolute',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                bottom: isHover ? '0' : '-100%',
+                left: '0',
+                width: '100%',
+                height: '30px',
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                transition: `bottom ${transitions.standard}`
+              }}
+            >
+              <IconButton
+                component='label'
+                sx={{
+                  height: 20,
+                  width: 20
+                }}
+              >
+                <PhotoCameraIcon 
+                  sx={{
+                    color: 'white',
+                  }}
+                />
+                <input onChange={onUploadAvatar} hidden type="file" />
+              </IconButton>
+            </Box>
+          </Box>
           <p style={{ ...typography.name }}>{me?.login}</p>
         </div>
         <Divider sx={{ color: colors['ghost-light'] }} />

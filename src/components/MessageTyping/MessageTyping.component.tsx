@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 
 interface IMessageTypingProps {
-  name: string;
+  name?: string;
 }
 
 const MessageTyping = ({ name }: IMessageTypingProps) => {
@@ -23,7 +23,7 @@ const MessageTyping = ({ name }: IMessageTypingProps) => {
 
   return (
     <>
-      печатает{dots}
+      {name && name + ': '}печатает{dots}
     </>
   );
 };

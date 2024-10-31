@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import Message from "../Message/Message.component";
 import { useContactsQuery, useUserMeQuery } from "../../../api/hooks/users";
 import { toggleContactsModal } from "../../../store/modals";
-import { useAddMessageToList, useConversationReadMessages } from "../../../utils/hooks";
+import { useAddMessageToList, useConversationReadMessages, useMarkMessageAsRead } from "../../../utils/hooks";
 
 const ChatWindow = () => {
   const { socket } = useSocket();
@@ -18,6 +18,7 @@ const ChatWindow = () => {
   const { data: user } = useUserMeQuery();
 
   const markMessageAsRead = useConversationReadMessages();
+  const changeMessagesStatus = useMarkMessageAsRead();
   const addMessage = useAddMessageToList();
 
   const messages = useMemo(() => {
@@ -36,6 +37,10 @@ const ChatWindow = () => {
     [addMessage, id, user?.id]
   );
 
+  const handleMessagesRead = useCallback(({ ids }: { ids: string[] }) => {
+    changeMessagesStatus({ conversationId: id!, ids });
+  }, [changeMessagesStatus, id]);
+
   const handleNewConversation = useCallback(
     async (data: { id: string }) => {
       if(socket) {
@@ -49,6 +54,15 @@ const ChatWindow = () => {
     setChatId(data.id);
   }, []);
 
+  useEffect(() => {
+    if(socket) {
+      socket.on(`messages_read_${id}`, handleMessagesRead);
+
+      return () => {
+        socket.off(`messages_read_${id}`, handleMessagesRead);
+      };
+    }
+  }, [handleMessagesRead, id, socket]);
 
   useEffect(() => {
     if(socket) {

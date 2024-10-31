@@ -56,7 +56,15 @@ const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps
     }
   }, [socket, onNewMessage, id, user?.id]);
 
-  if(status === '') return;
+  useEffect(() => {
+    if(socket) {
+      socket.emit('request_unread_count', {
+        conversationId: id
+      });
+    }
+  }, [id, socket]);
+
+  if(status === '' && count === undefined) return null;
 
   return (
     <Box onClick={onClick} className={styles.conversation} sx={{ 
@@ -77,7 +85,7 @@ const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps
           },
         }}
         invisible={
-          status == 'offline'
+          status !== 'online'
         }
         color="primary"
         overlap="circular"
