@@ -40,3 +40,21 @@ export const changeUserData = async (userData: Partial<User>) => {
 
   return data;
 };
+
+export const changeUserAvatar = async (formData: FormData) => {
+  const { data } = await api.post('/me/avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+
+  console.log(data);
+
+  return data;
+};
+
+export const getUserProp = async (id: string, prop: string) => {
+  const { data } = await api.get(`/user/${id}/${prop}`);
+
+  return data[prop];
+};

@@ -1,7 +1,8 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getConversations, getLastMessage, getMessages } from "../services/messages";
+import { useQuery, keepPreviousData, useMutation } from "@tanstack/react-query";
+import { getConversations, getLastMessage, getMessages, sendMessageAttachments } from "../services/messages";
 import { messagesKeys } from "../queries/queryKeys";
-import type { AxiosError } from "axios";
+import { AxiosError } from "axios";
+import type { IMutationCallbacks } from "../../types";
 
 
 export const useMessagesQuery = (id: Conversation['id'] | undefined) => {
@@ -30,5 +31,13 @@ export const useLastMessageQuery = (id: Conversation['id']) => {
     queryKey: messagesKeys.lastMessagge(id),
     refetchOnWindowFocus: false,
     queryFn: () => getLastMessage(id)
+  });
+};
+
+export const useSendMessageAttachmentsMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
+  return useMutation<{secure_url: string, preview_url: string}[], AxiosError, FormData>({
+    mutationFn: (formData) => sendMessageAttachments(formData),
+    onSuccess,
+    onError
   });
 };

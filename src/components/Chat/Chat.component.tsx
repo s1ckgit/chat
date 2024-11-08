@@ -4,6 +4,7 @@ import { useChat } from '../../store';
 import ChatInput from './ChatInput/ChatInput.component';
 import ChatWindow from './ChatWindow/ChatWindow.component';
 import ChatBar from './ChatBar/ChatBar.component';
+import AttachFileModal from './AttachFileModal/AttachFileModal.component';
 
 
 const Chat = () => {
@@ -18,6 +19,8 @@ const Chat = () => {
         gridTemplateRows: receiverName || id ? 'auto 1fr 80px' : '1fr'
       }}
     >
+      <AttachFileModal />
+  
       {(receiverName || id) && <ChatBar />}
 
       <ChatWindow />

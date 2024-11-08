@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/queryKeys";
-import { addContact, changeUserData, getContacts, getMyInfo } from "../services/users";
+import { addContact, changeUserAvatar, changeUserData, getContacts, getMyInfo, getUserProp } from "../services/users";
 import { AxiosError } from "axios";
 import { logout } from "../services/auth";
 import type { IMutationCallbacks } from "../../types";
@@ -19,6 +19,13 @@ export const useContactsQuery = () => {
   return useQuery<Contact[], AxiosError>({
     queryKey: userKeys.contacts,
     queryFn: getContacts
+  });
+};
+
+export const useGetUserPropQuery = (id: string, prop: string) => {
+  return useQuery<User['avatarVersion'], AxiosError>({
+    queryKey: userKeys.prop(id, prop),
+    queryFn: () => getUserProp(id, prop)
   });
 };
 
@@ -41,6 +48,14 @@ export const useLogoutMutation = ({ onSuccess, onError }: IMutationCallbacks) =>
 export const useChangeUserDataMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
   return useMutation({
     mutationFn: (userData) => changeUserData(userData),
+    onSuccess,
+    onError
+  });
+};
+
+export const useChangeUserAvatarMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
+  return useMutation({
+    mutationFn: (formData: FormData) => changeUserAvatar(formData),
     onSuccess,
     onError
   });

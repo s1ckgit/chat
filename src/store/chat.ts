@@ -17,6 +17,12 @@ export const useChat = create<IChat>(() => ({
   pendingMessages: new Map()
 }));
 
+export const useChatInput = create<string>(() => (''));
+
+export const setChatInput = (string: string) => {
+  useChatInput.setState(() => (string));
+};
+
 export const setChatId = (id: string | undefined) => {
   useChat.setState((state) => ({ ...state, id }));
 };

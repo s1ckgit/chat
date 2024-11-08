@@ -2,6 +2,7 @@ export const userKeys = {
   me: (id: string | null) => ['user', 'me', id] as const,
   details: (id: number) => ['user', id] as const,
   contacts: ['contacts'] as const,
+  prop: (id: string, prop: string) => ['user', id, prop] as const
 };
 
 export const messagesKeys = {

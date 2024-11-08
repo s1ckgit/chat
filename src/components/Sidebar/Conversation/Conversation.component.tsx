@@ -4,19 +4,19 @@ import { useColors, useTransitions, useTypography } from '../../../theme/hooks';
 import { formatDate } from '../../../utils';
 import styles from './Conversation.module.css';
 
-import { Avatar, Badge, Box } from '@mui/material';
+import { Avatar, Badge, Box, Typography } from '@mui/material';
 import { useStatus, useUnreadCount, useUpdateLastMessage } from '../../../utils/hooks';
 import { useUserMeQuery } from '../../../api/hooks/users';
 import { useSocket } from '../../../store/socket';
+import { cld } from '../../../utils/сloudinary';
 
 interface IConversationProps {
   id: string;
-  login: string;
-  receiverId: string;
+  receiver: User;
   lastMessage?: Message
 }
 
-const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps) => {
+const Conversation = ({ lastMessage, id, receiver }: IConversationProps) => {
   const colors = useColors();
   const transitions = useTransitions();
   const typography = useTypography();
@@ -26,6 +26,7 @@ const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps
 
   const updateLastMessage = useUpdateLastMessage();
   const count = useUnreadCount(id);
+  const avatarSrc = receiver.avatarVersion ? cld.image(`avatars/${receiver.id}/thumbnail`).setVersion(receiver.avatarVersion).toURL() : '';
   
   let createdAt;
   let content;
@@ -33,12 +34,12 @@ const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps
     createdAt = lastMessage.createdAt;
     content = lastMessage.content;
   }
-  const status = useStatus(receiverId);
+  const status = useStatus(receiver.id);
   const date = createdAt ? formatDate(createdAt) : null;
 
   const onClick = () => {
-    setReceiverName(login);
-    setReceiverId(receiverId);
+    setReceiverName(receiver.login);
+    setReceiverId(receiver.id);
     setChatId(id);
   };
   
@@ -91,12 +92,22 @@ const Conversation = ({ login, lastMessage, id, receiverId }: IConversationProps
         overlap="circular"
         variant="dot"
       >
-        <Avatar src="https://static.vecteezy.com/system/resources/thumbnails/036/280/651/small_2x/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-illustration-vector.jpg" />
+        <Avatar src={avatarSrc} />
       </Badge>
       <div className={styles['conversation-info']}>
-        <p style={{ ...typography.name }} className={styles['conversation-name']}>{login}</p>
+        <p style={{ ...typography.name }} className={styles['conversation-name']}>{receiver.login}</p>
         <p style={{ ...typography.info, color: colors['ghost-main'] }} className={styles['conversation-date']}>{date}</p>
-        <p style={{ ...typography['messages-text'], color: colors['ghost-main'] }} className={styles['conversation-message']}>{content}</p>
+        <Typography sx={{ 
+            ...typography['messages-text'], 
+            color: colors['ghost-main'],
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow:'ellipsis',
+         }} 
+         className={styles['conversation-message']}
+         >
+          {content}
+        </Typography>
         <Badge badgeContent={count} color='primary' max={99} />
       </div>
     </Box>

@@ -18,3 +18,13 @@ export const getLastMessage = async (id: Conversation['id']) => {
 
   return data;
 };
+
+export const sendMessageAttachments = async (formData: FormData) => {
+  const { data } = await api.post('/messages/attachments', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+
+  return data as Promise<{ secure_url: string; preview_url: string; }[]>;
+};

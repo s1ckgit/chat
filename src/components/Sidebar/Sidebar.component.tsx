@@ -97,8 +97,8 @@ const Sidebar = () => {
             className={styles.conversations}
            >
             {conversations.map((c) => {
-              const receiverId = c.participants[0].id;
-              return <Conversation receiverId={receiverId} key={c.id} id={c.id} login={c.participants[0].login} lastMessage={c.lastMessage}/>;
+              const receiver = c.participants[0];
+              return <Conversation receiver={receiver} key={c.id} id={c.id} lastMessage={c.lastMessage}/>;
             })}
           </Box>
           ) : isFetched && <>Нет диалогов</>

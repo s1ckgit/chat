@@ -1,14 +1,16 @@
 import { Box, IconButton, Input } from "@mui/material";
-import { ChangeEvent, useCallback, useState } from "react";
+import { ChangeEvent, useCallback } from "react";
 import SendIcon from '@mui/icons-material/Send';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { useColors } from "../../../theme/hooks";
 import { useChat } from "../../../store";
-import { setPendingMessage } from "../../../store/chat";
+import { setChatInput, setPendingMessage, useChatInput } from "../../../store/chat";
 import { v4 as uuidv4 } from 'uuid';
 import throttle from 'lodash.throttle';
 import { useUserMeQuery } from "../../../api/hooks/users";
 import { useSocket } from "../../../store/socket";
 import { IPendingMessage } from "../../../types";
+import { addFilesToSend, addImagesSrc, toggleAttchFileModal } from "../../../store/modals";
 
 const ChatInput = () => {
   const colors = useColors();
@@ -16,8 +18,7 @@ const ChatInput = () => {
   const { socket } = useSocket();
   const { data: user } = useUserMeQuery();
   const { id, receiverId } = useChat();
-
-  const [message, setMessage] = useState('');
+  const chatInput = useChatInput();
 
   const emitTyping = useCallback(() => {
     if (socket) {
@@ -32,7 +33,7 @@ const ChatInput = () => {
   const throttledTyping = useCallback(throttle(emitTyping, 500), [emitTyping]);
 
   const onTyping = (e: ChangeEvent<HTMLInputElement>) => {
-    setMessage(e.target.value);
+    setChatInput(e.target.value);
     throttledTyping();
   };
 
@@ -46,9 +47,10 @@ const ChatInput = () => {
         createdAt,
         status: 'pending',
         conversationId: id as string,
-        content: message,
+        content: chatInput,
         senderId: user?.id as string,
-        receiverId: receiverId as string
+        receiverId: receiverId as string,
+        attachments: []
       };
 
       setPendingMessage(newMessage);
@@ -56,21 +58,40 @@ const ChatInput = () => {
       socket.emit('send_message', newMessage);
     }
 
-    setMessage('');
+    setChatInput('');
+  };
+
+  const onImageLoad = (e: ChangeEvent<HTMLInputElement>) => {
+    if(e.target.files?.length) {
+      const files = Array.from(e.target.files).slice(0, 9);
+      addFilesToSend(files);
+
+      const fileUrls = files.map((file) => URL.createObjectURL(file));
+      addImagesSrc(fileUrls);
+      
+      toggleAttchFileModal();
+    }
   };
 
   return (
     <Box 
       sx={{
-        padding: '10px 16px',
+        padding: '10px',
         borderTop: '1px solid',
         borderColor: colors['ghost-light'],
     
         display: 'grid',
-        gridTemplateColumns: '1fr 56px'
+        gridTemplateColumns: '56px 1fr 56px',
+        columnGap: '10px'
       }}
     >
-      <Input value={message} onChange={onTyping} disableUnderline placeholder='Сюда хуйню свою высирай' />
+      <IconButton 
+        component='label'
+      >
+        <input onChange={onImageLoad} hidden type="file" accept=".png, .jpg, .jpeg"/>
+        <AttachFileIcon sx={{ fontSize: 40 }} color={'primary'} />
+      </IconButton>
+      <Input value={chatInput} onChange={onTyping} disableUnderline placeholder='Сюда хуйню свою высирай' />
       <IconButton onClick={onSendMessage}>
         <SendIcon sx={{ fontSize: 40 }} color={'primary'} />
       </IconButton>

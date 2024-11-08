@@ -7,7 +7,7 @@ declare global {
     password: string;
     refreshToken: string;
     status: string;
-    avatarSrc?: string;
+    avatarVersion?: string;
     contacts?: Contact[];
     contactOf?: Contact[];
     conversations?: Conversation[];
@@ -42,6 +42,7 @@ declare global {
     conversationId: string;
     createdAt: Date;
     status: 'pending' | 'delivered' | 'read';
+    attachments?: {secure_url: string, preview_url: string}[];
     sender: User;
     conversation: Conversation;
     lastConversation: Conversation; 

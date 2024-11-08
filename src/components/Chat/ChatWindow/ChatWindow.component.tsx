@@ -1,95 +1,14 @@
 import { Box, Button, CircularProgress } from "@mui/material";
-import { useMessagesQuery } from "../../../api/hooks/messages";
-import { useChat } from "../../../store";
-import { deletePendingMessage, setChatId } from "../../../store/chat";
-import { useSocket } from '../../../store/socket';
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import Message from "../Message/Message.component";
-import { useContactsQuery, useUserMeQuery } from "../../../api/hooks/users";
+import { useContactsQuery } from "../../../api/hooks/users";
 import { toggleContactsModal } from "../../../store/modals";
-import { useAddMessageToList, useConversationReadMessages, useMarkMessageAsRead } from "../../../utils/hooks";
+import { useChatWindow } from "../../../utils/hooks";
 
 const ChatWindow = () => {
-  const { socket } = useSocket();
-  const { id, pendingMessages, receiverId } = useChat();
-
-  const { data, isFetching } = useMessagesQuery(id);
+  const { renderMessages, receiverId, isMessagesFetching, chatWindowRef, id } = useChatWindow();
   const { data: contacts, isLoading: contactsLoading } = useContactsQuery();
-  const { data: user } = useUserMeQuery();
-
-  const markMessageAsRead = useConversationReadMessages();
-  const changeMessagesStatus = useMarkMessageAsRead();
-  const addMessage = useAddMessageToList();
-
-  const messages = useMemo(() => {
-    return [...(data || []), ...Array.from(pendingMessages.values())];
-  }, [data, pendingMessages]);
-
-  const chatWindowRef = useRef<HTMLDivElement>(null);
-
-  const handleNewMessage = useCallback(
-    async ({ senderId, message }: { senderId: string; message: Message }) => {
-      if(senderId === user?.id) {
-        deletePendingMessage(message.id);
-      }
-      addMessage({ conversationId: id as string, message });
-    },
-    [addMessage, id, user?.id]
-  );
-
-  const handleMessagesRead = useCallback(({ ids }: { ids: string[] }) => {
-    changeMessagesStatus({ conversationId: id!, ids });
-  }, [changeMessagesStatus, id]);
-
-  const handleNewConversation = useCallback(
-    async (data: { id: string }) => {
-      if(socket) {
-        socket.on(`new_message_${data.id}`, handleNewMessage);
-      }
-    }, 
-    [handleNewMessage, socket]
-  );
-
-  const handleNewConversationOpened = useCallback((data: { id: string; }) => {
-    setChatId(data.id);
-  }, []);
-
-  useEffect(() => {
-    if(socket) {
-      socket.on(`messages_read_${id}`, handleMessagesRead);
-
-      return () => {
-        socket.off(`messages_read_${id}`, handleMessagesRead);
-      };
-    }
-  }, [handleMessagesRead, id, socket]);
-
-  useEffect(() => {
-    if(socket) {
-      if(id) {
-        socket.on(`new_message_${id}`, handleNewMessage);
-      }
-      else {
-        socket.on('new_conversation_opened', handleNewConversationOpened);
-      }
-      socket.on('new_conversation', handleNewConversation);
-
-      return () => {
-        socket.off('new_conversation_opened', handleNewConversationOpened);
-        socket.off(`new_conversation`, handleNewConversation);
-        socket.off(`new_message_${id}`, handleNewMessage);
-      };
-    }
-  }, [socket, handleNewConversation, handleNewMessage, id, handleNewConversationOpened]);
-
-  useEffect(() => {
-    if (chatWindowRef.current) {
-      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   return (
-    isFetching ? (
+    isMessagesFetching ? (
       <Box className='loading-container'>
         <CircularProgress />
       </Box>
@@ -180,9 +99,7 @@ const ChatWindow = () => {
             <>
               <Box sx={{ height: '100%' }} />
               { 
-                messages && messages.map((message: { content: string; senderId: string | undefined; createdAt: Date; id: string; status: 'pending' | 'delivered' | 'read'; conversationId: string; }) => {
-                  return <Message onRead={markMessageAsRead} conversationId={message.conversationId} id={message.id} status={message.status} key={message.id + message.status} text={message.content} senderID={message.senderId} createdAt={message.createdAt} />;
-                })
+                renderMessages()
               }
             </>
           )
