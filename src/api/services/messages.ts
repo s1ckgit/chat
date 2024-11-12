@@ -26,5 +26,5 @@ export const sendMessageAttachments = async (formData: FormData) => {
     }
   });
 
-  return data as Promise<{ secure_url: string; preview_url: string; }[]>;
+  return data as Promise<any>;
 };

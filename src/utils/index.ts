@@ -1,7 +1,7 @@
 import { format, isToday, isThisWeek, differenceInHours, differenceInDays, isYesterday } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { IPendingMessage } from '../types';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 export const formatDate = (date: Date) => {
   if(isToday(date)) {
@@ -37,39 +37,67 @@ export const formatStatus = (input: string): string => {
   }
 };
 
-export function isPendingMessage(message: Message | IPendingMessage): message is IPendingMessage {
-  return (message as IPendingMessage).attachmentProgress !== undefined; 
-}
+export const preloadImages = async (urls: string[]) => {
+  return new Promise((resolve) => {
+    const isLoaded = [];
 
-export const preloadImageWithProgress = async (url: string, onProgress: ({ conversationId, messageId, progress }) => void, onProgressVars: { conversationId: string, messageId: string }) => {
-  const { conversationId, messageId } = onProgressVars;
-  try {
-    const response = await axios.get(url, {
-      responseType: 'blob',
-      onDownloadProgress: (progressEvent) => {
-        const total = progressEvent.total;
-        const loaded = progressEvent.loaded;
-        const percentCompleted = Math.floor((loaded / total!) * 100);
-        onProgress({ conversationId, messageId, progress: percentCompleted }); // Передаем процент загрузки в функцию обратного вызова
-      },
+    urls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+
+      const onComplete = () => {
+        isLoaded.push(url);
+        if (isLoaded.length === urls.length) {
+          resolve(true);
+        }
+      };
+
+      img.onload = onComplete;
+      img.onerror = onComplete;
     });
-
-    // Создаем URL для изображения после завершения загрузки
-    return URL.createObjectURL(response.data);
-  } catch (error) {
-    console.error('Ошибка загрузки изображения:', error);
-    throw error;
-  }
+  });
 };
 
-export const preloadPreview = async (url: string) => {
-  try {
-    const response = await axios.get(url, {
-      responseType: 'blob'
-    });
-    return URL.createObjectURL(response.data);
-  } catch (error) {
-    console.error('Ошибка загрузки изображения:', error);
-    throw error;
+export const buildGridForAttachments = (count: number) => {
+  const baseStyle = {
+    display: 'grid',
+    gap: 1,
+    borderRadius: '24px',
+    overflow: 'hidden',
+  };
+
+  switch(count) {
+    case 1:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: '1fr',
+      };
+      
+    case 2:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: '70% 30%',
+      };
+
+    case 3:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: '1fr',
+        gridTemplateRows: 'auto auto',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 2',
+        },
+      };
+
+    case 4:
+    default:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridAutoRows: 'minmax(100px, auto)',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 2',
+        },
+      };
   }
 };

@@ -6,10 +6,12 @@ import { messagesKeys, userKeys } from "../api/queries/queryKeys";
 import debounce from 'lodash.debounce';
 import { useSocket } from "../store/socket";
 import { useGetUserPropQuery, useUserMeQuery } from "../api/hooks/users";
-import { formatStatus, preloadImageWithProgress, preloadPreview } from ".";
+import { formatStatus, preloadImages } from ".";
 import { useMessagesQuery } from "../api/hooks/messages";
 import Message from "../components/Chat/Message/Message.component";
 import { IPendingMessage } from "../types";
+import { cld } from "./сloudinary";
+import { format } from "date-fns";
 
 
 export const useStatus = (id: string) => {
@@ -82,52 +84,55 @@ export const useUpdateLastMessage = () => {
   return updateLastMessage;
 };
 
-export const useUpdateAttachmentProgress = () => {
-  const queryClient = useQueryClient();
+// export const useUpdateAttachmentProgress = () => {
+//   const queryClient = useQueryClient();
 
-  const updateAttachmentProgress = useCallback(({ conversationId, messageId, progress }) => {
-    queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: any[]) => {
-      if(!oldMessages) return;
+//   const updateAttachmentProgress = useCallback(({ conversationId, messageId, progress }) => {
+//     queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: any[]) => {
+//       if(!oldMessages) return;
 
-      return oldMessages.map((m) => {
-        if(m.id === messageId) {
-          return {
-            ...m,
-            attachmentProgress: progress
-          };
-        }
-        return m;
-      });
-    });
-  }, [queryClient]);
+//       return oldMessages.map((m) => {
+//         if(m.id === messageId) {
+//           return {
+//             ...m,
+//             attachments: {
+//               ...m.attachments,
+//               attachmentProgress: progress
+//             }
+//           };
+//         }
+//         return m;
+//       });
+//     });
+//   }, [queryClient]);
 
-  return updateAttachmentProgress;
-};
+//   return updateAttachmentProgress;
+// };
 
-export const useUpdateAttachmentsUrl = () => {
-  const queryClient = useQueryClient();
+// export const useUpdateAttachmentsUrl = () => {
+//   const queryClient = useQueryClient();
 
-  const updateAttachmentsUrl = useCallback(({ conversationId, messageId, url }) => {
-    queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: any[]) => {
-      if(!oldMessages) return;
+//   const updateAttachmentsUrl = useCallback(({ conversationId, messageId, url }) => {
+//     queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: any[]) => {
+//       if(!oldMessages) return;
 
-      return oldMessages.map((m) => {
-        if(m.id === messageId) {
-          return {
-            ...m,
-            attachments: [{
-              secure_url: url,
-              preview_url: url
-            }]
-          };
-        }
-        return m;
-      });
-    });
-  }, [queryClient]);
+//       return oldMessages.map((m) => {
+//         if(m.id === messageId) {
+//           return {
+//             ...m,
+//             attachments: [{
+//               secure_url: url,
+//               preview_url: url
+//             }]
+//           };
+//         }
+//         return m;
+//       });
+//     });
+//   }, [queryClient]);
 
-  return updateAttachmentsUrl;
-};
+//   return updateAttachmentsUrl;
+// };
 
 export const useAddMessageToList = () => {
   const queryClient = useQueryClient();
@@ -249,8 +254,6 @@ export const useChatWindow = () => {
   const markMessageAsRead = useConversationReadMessages();
   const changeMessagesStatus = useMarkMessageAsRead();
   const addMessage = useAddMessageToList();
-  const updateAttachmentProgress = useUpdateAttachmentProgress();
-  const updateAttachmentsUrl = useUpdateAttachmentsUrl();
 
   const messages = useMemo(() => {
     return [...(data || []), ...Array.from(pendingMessages.values())];
@@ -280,29 +283,15 @@ export const useChatWindow = () => {
 
   const handleNewMessage = useCallback(
     async ({ message }: { message: Message }) => {
-      if(message.attachments?.length) {
-        const previewUrl = await preloadPreview(message.attachments[0].preview_url);
-        if(message.senderId === user?.id) {
-          deletePendingMessage(message.id);
+        if(message.attachments?.length) {
+          await preloadImages(message.attachments.map((attach) => attach.previewUrl));
         }
-        addMessage({ conversationId: id as string, message: {
-          ...message,
-          attachments: [{
-            ...message.attachments[0],
-            preview_url: previewUrl
-          }],
-          attachmentProgress: 0
-        }});
-        const url = await preloadImageWithProgress(message.attachments[0].secure_url, updateAttachmentProgress, { conversationId: id!, messageId: message.id });
-        updateAttachmentsUrl({ conversationId: id!, messageId: message.id, url });
-      } else {
         if(message.senderId === user?.id) {
           deletePendingMessage(message.id);
         }
         addMessage({ conversationId: id as string, message });
-      }
     },
-    [addMessage, id, updateAttachmentProgress, updateAttachmentsUrl, user?.id]
+    [addMessage, id, user?.id]
   );
 
   const handleMessagesRead = useCallback(({ ids }: { ids: string[] }) => {
@@ -354,7 +343,7 @@ export const useChatWindow = () => {
     if (chatWindowRef.current) {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, chatWindowRef]);
 
   return {
     renderMessages,
@@ -363,5 +352,17 @@ export const useChatWindow = () => {
     chatWindowRef,
     id
   };
-
 };
+
+export const useMessage = (messageData: Message | IPendingMessage) => {
+  const { data: user } = useUserMeQuery();
+
+  const { senderId, id, content: text, status, createdAt, attachments } = messageData;
+
+  const isInitiatorMessage = senderId ===  user?.id;
+  const avatarVersion = useUserAvatar(senderId);
+  const avatarSrc = avatarVersion && cld.image(`avatars/${senderId}/thumbnail`).setVersion(avatarVersion).toURL();
+  const date = format(createdAt, 'HH:mm');
+
+  return { id, text, status, attachments, isInitiatorMessage, avatarSrc, date };
+}

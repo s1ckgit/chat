@@ -13,7 +13,7 @@ const AttachFileModal = () => {
   const chatInput = useChatInput();
   const { socket } = useSocket();
   const { data: user } = useUserMeQuery();
-  const { isOpened, imagesSrc, filesToSend } = useModals(state => state.attachFileModal);
+  const { isOpened, attachments } = useModals(state => state.attachFileModal);
   const sendMessageAttachments = useSendMessageAttachmentsMutation({});
 
   const onSend = async () => {
@@ -28,13 +28,7 @@ const AttachFileModal = () => {
       content: chatInput,
       senderId: user?.id as string,
       receiverId: receiverId as string,
-      attachments: [
-        {
-          preview_url: imagesSrc[0],
-          secure_url: imagesSrc[0]
-        }
-      ],
-      attachmentProgress: 0
+      attachments
     };
     setPendingMessage(newPendingMessage);
     setChatInput('');
@@ -43,21 +37,22 @@ const AttachFileModal = () => {
     const formData = new FormData();
     formData.append('messageId', messageId);
     formData.append('conversationId', conversationId!);
-    filesToSend.forEach((file) => {
-      formData.append('attachments', file);
+    attachments.forEach((attachment) => {
+      formData.append('attachments', attachment.file);
     });
 
-    const attachmentLinks = await sendMessageAttachments.mutateAsync(formData);
+    const attachmentsLinks = await sendMessageAttachments.mutateAsync(formData);
 
     const newMessage = {
       ...newPendingMessage,
-      attachments: attachmentLinks
+      attachments: attachmentsLinks
     };
 
     socket?.emit('send_message', newMessage);
   };
 
   return (
+    attachments.length ?
     <Modal
       open={isOpened}
       slotProps={{
@@ -106,7 +101,7 @@ const AttachFileModal = () => {
             }}
           >
             <img 
-              src={imagesSrc[0]}
+              src={URL.createObjectURL(attachments[0].file)}
               style={{
                 objectFit: 'contain',
                 objectPosition: 'center',
@@ -139,7 +134,7 @@ const AttachFileModal = () => {
           </Box>
         </Box>
       </Container>
-    </Modal>
+    </Modal> : null
   );
 };
 export default AttachFileModal;

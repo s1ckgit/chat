@@ -16,11 +16,3 @@
   white-space: normal;
   overflow-wrap: break-word;
 }
-
-.message-date {
-  display: flex;
-  align-items: center;
-  column-gap: 3px;
-  padding-left: 10px;
-  float:right;
-}

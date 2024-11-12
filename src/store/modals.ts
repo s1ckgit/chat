@@ -6,8 +6,7 @@ interface IModals {
   addContactModal: boolean;
   attachFileModal: {
     isOpened: boolean;
-    imagesSrc: string[];
-    filesToSend: File[];
+    attachments: any[];
   };
 }
 
@@ -17,8 +16,7 @@ export const useModals = create<IModals>(() => ({
   addContactModal: false,
   attachFileModal: {
     isOpened: false,
-    imagesSrc: [],
-    filesToSend: []
+    attachments: []
   }
 }));
 
@@ -43,39 +41,27 @@ export const toggleAddContactModal = () => {
   }));
 };
 
-export const toggleAttchFileModal = () => {
+export const toggleAttchFileModal = (ref: React.RefObject<HTMLInputElement>) => {
+  if(ref.current) {
+    ref.current.value = '';
+  }
   useModals.setState((state) => ({
     ...state,
     attachFileModal: {
       isOpened: !state.attachFileModal.isOpened,
-      imagesSrc: !state.attachFileModal.isOpened ? state.attachFileModal.imagesSrc : [],
-      filesToSend: !state.attachFileModal.isOpened ? state.attachFileModal.filesToSend : []
+      attachments: !state.attachFileModal.isOpened ? state.attachFileModal.attachments : []
     }
   }));
 };
 
-export const addImagesSrc = (urls: string[]) => {
+export const setAttachments = (attachments: any[]) => {
   useModals.setState((state) => ({
     ...state,
     attachFileModal: {
       ...state.attachFileModal,
-      isOpened: state.attachFileModal.isOpened,
-      imagesSrc: [
-        ...state.attachFileModal.imagesSrc,
-        ...urls
-      ]
-    }
-  }));
-};
-
-export const addFilesToSend = (files: File[]) => {
-  useModals.setState((state) => ({
-    ...state,
-    attachFileModal: {
-      ...state.attachFileModal,
-      filesToSend: [
-        ...state.attachFileModal.filesToSend,
-        ...files
+      attachments: [
+        ...state.attachFileModal.attachments,
+        ...attachments
       ]
     }
   }));

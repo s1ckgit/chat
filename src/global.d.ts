@@ -42,7 +42,7 @@ declare global {
     conversationId: string;
     createdAt: Date;
     status: 'pending' | 'delivered' | 'read';
-    attachments?: {secure_url: string, preview_url: string}[];
+    attachments?: any[];
     sender: User;
     conversation: Conversation;
     lastConversation: Conversation; 

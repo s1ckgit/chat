@@ -1,5 +1,5 @@
 import { Box, IconButton, Input } from "@mui/material";
-import { ChangeEvent, useCallback } from "react";
+import { ChangeEvent, useCallback, useRef } from "react";
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { useColors } from "../../../theme/hooks";
@@ -10,7 +10,7 @@ import throttle from 'lodash.throttle';
 import { useUserMeQuery } from "../../../api/hooks/users";
 import { useSocket } from "../../../store/socket";
 import { IPendingMessage } from "../../../types";
-import { addFilesToSend, addImagesSrc, toggleAttchFileModal } from "../../../store/modals";
+import { setAttachments, toggleAttchFileModal } from "../../../store/modals";
 
 const ChatInput = () => {
   const colors = useColors();
@@ -19,6 +19,7 @@ const ChatInput = () => {
   const { data: user } = useUserMeQuery();
   const { id, receiverId } = useChat();
   const chatInput = useChatInput();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const emitTyping = useCallback(() => {
     if (socket) {
@@ -49,8 +50,7 @@ const ChatInput = () => {
         conversationId: id as string,
         content: chatInput,
         senderId: user?.id as string,
-        receiverId: receiverId as string,
-        attachments: []
+        receiverId: receiverId as string
       };
 
       setPendingMessage(newMessage);
@@ -64,12 +64,14 @@ const ChatInput = () => {
   const onImageLoad = (e: ChangeEvent<HTMLInputElement>) => {
     if(e.target.files?.length) {
       const files = Array.from(e.target.files).slice(0, 9);
-      addFilesToSend(files);
-
-      const fileUrls = files.map((file) => URL.createObjectURL(file));
-      addImagesSrc(fileUrls);
+      const attachments = files.map((file) => ({
+        previewUrl: URL.createObjectURL(file),
+        originalUrl: '',
+        file
+      }));
+      setAttachments(attachments);
       
-      toggleAttchFileModal();
+      toggleAttchFileModal(fileInputRef);
     }
   };
 
@@ -88,7 +90,7 @@ const ChatInput = () => {
       <IconButton 
         component='label'
       >
-        <input onChange={onImageLoad} hidden type="file" accept=".png, .jpg, .jpeg"/>
+        <input ref={fileInputRef} onChange={onImageLoad} hidden type="file" multiple accept=".png, .jpg, .jpeg"/>
         <AttachFileIcon sx={{ fontSize: 40 }} color={'primary'} />
       </IconButton>
       <Input value={chatInput} onChange={onTyping} disableUnderline placeholder='Сюда хуйню свою высирай' />

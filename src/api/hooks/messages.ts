@@ -35,7 +35,7 @@ export const useLastMessageQuery = (id: Conversation['id']) => {
 };
 
 export const useSendMessageAttachmentsMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
-  return useMutation<{secure_url: string, preview_url: string}[], AxiosError, FormData>({
+  return useMutation<any, AxiosError, FormData>({
     mutationFn: (formData) => sendMessageAttachments(formData),
     onSuccess,
     onError

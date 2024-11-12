@@ -16,5 +16,4 @@ export interface ICreateUserData {
 
 export interface IPendingMessage extends Omit<Message, 'sender' | 'conversation' | 'lastConversation'> {
   receiverId: string;
-  attachmentProgress?: number;
 }
