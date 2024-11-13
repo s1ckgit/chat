@@ -1,5 +1,5 @@
 import { Box, IconButton, Input } from "@mui/material";
-import { ChangeEvent, useCallback, useRef } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef } from "react";
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { useColors } from "../../../theme/hooks";
@@ -10,10 +10,11 @@ import throttle from 'lodash.throttle';
 import { useUserMeQuery } from "../../../api/hooks/users";
 import { useSocket } from "../../../store/socket";
 import { IPendingMessage } from "../../../types";
-import { setAttachments, toggleAttchFileModal } from "../../../store/modals";
+import { setAttachments, setFileInputRef, toggleAttchFileModal, useModals } from "../../../store/modals";
 
 const ChatInput = () => {
   const colors = useColors();
+  const { isOpened } = useModals(state => state.attachFileModal);
 
   const { socket } = useSocket();
   const { data: user } = useUserMeQuery();
@@ -64,16 +65,24 @@ const ChatInput = () => {
   const onImageLoad = (e: ChangeEvent<HTMLInputElement>) => {
     if(e.target.files?.length) {
       const files = Array.from(e.target.files).slice(0, 9);
-      const attachments = files.map((file) => ({
+      const attachments = files.map((file, i) => ({
+        id: i,
         previewUrl: URL.createObjectURL(file),
         originalUrl: '',
         file
       }));
       setAttachments(attachments);
-      
-      toggleAttchFileModal(fileInputRef);
-    }
+      if(!isOpened) {
+        toggleAttchFileModal();
+      }
+    };
   };
+
+  useEffect(() => {
+    if(fileInputRef.current) {
+      setFileInputRef(fileInputRef);
+    }
+  }, [fileInputRef]);
 
   return (
     <Box 

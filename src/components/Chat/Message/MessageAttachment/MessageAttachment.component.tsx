@@ -1,5 +1,6 @@
 import { Box, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
+import { setImageModalSrc, toggleImageModal } from "../../../../store/modals";
 
 interface IMesssageAttachment {
   data: any;
@@ -8,6 +9,12 @@ interface IMesssageAttachment {
 const MessageAttachment = ({ data }: IMesssageAttachment) => {
   const [isLoading, setIsLoading] = useState(true);
   const [src, setSrc] = useState(data.previewUrl);
+
+  const onOpenImage = () => {
+    if(isLoading) return;
+    setImageModalSrc(src);
+    toggleImageModal();
+  };
 
   useEffect(() => {
     const img = new Image();
@@ -28,6 +35,8 @@ const MessageAttachment = ({ data }: IMesssageAttachment) => {
   return (
     <>
       <Box
+        component='div'
+        onClick={onOpenImage}
         sx={{
           position: 'relative',
           overflow: 'hidden',

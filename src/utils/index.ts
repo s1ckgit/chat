@@ -59,6 +59,8 @@ export const preloadImages = async (urls: string[]) => {
 };
 
 export const buildGridForAttachments = (count: number) => {
+  if(count > 9 || count < 1) return {};
+
   const baseStyle = {
     display: 'grid',
     gap: 1,
@@ -76,13 +78,13 @@ export const buildGridForAttachments = (count: number) => {
     case 2:
       return {
         ...baseStyle,
-        gridTemplateColumns: '70% 30%',
+        gridTemplateColumns: '60% 40%',
       };
 
     case 3:
       return {
         ...baseStyle,
-        gridTemplateColumns: '1fr',
+        gridTemplateColumns: '1fr 1fr',
         gridTemplateRows: 'auto auto',
         '& > :nth-of-type(1)': {
           gridColumn: 'span 2',
@@ -90,14 +92,145 @@ export const buildGridForAttachments = (count: number) => {
       };
 
     case 4:
-    default:
       return {
         ...baseStyle,
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gridAutoRows: 'minmax(100px, auto)',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(150px, auto)',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 3'
+        }
+      };
+    case 5: 
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(150px, auto)',
         '& > :nth-of-type(1)': {
           gridColumn: 'span 2',
         },
       };
+    case 6: 
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(250px, auto)'
+      };
+    case 7: 
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(150px, auto)',
+        '&  > :nth-of-type(1)': {
+          gridColumn: 'span 3'
+        }
+      };
+    case 8: 
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(150px, auto)',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 2'
+        }
+      };
+    case 9: 
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(150px, auto)',
+      };
   }
 };
+
+export const buildGridForAttachmentsModal = (count: number) => {
+  const baseStyle = {
+    display: 'grid',
+    gap: 1,
+    borderRadius: '16px',
+    overflow: 'hidden',
+    maxHeight: '400px',
+    width: '320px',
+  };
+
+  switch (count) {
+    case 1:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: '1fr',
+      };
+
+    case 2:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: '60% 40%',
+      };
+
+    case 3:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: '200px 1fr',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 2',
+        }
+      };
+
+    case 4:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateRows: 'repeat(2, 1fr)',
+      };
+
+    case 5:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateRows: '25% 25% 50%',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 2',
+          order: '1'
+        }
+      };
+    case 6:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: 'repeat(3, 33.3%)',
+      };
+
+    case 7:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateRows: 'repeat(3, 33.3%)',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 3',
+          order: '1'
+        }
+      };
+    case 8:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateRows: 'repeat(3, 33.3%)',
+        '& > :nth-of-type(1)': {
+          gridColumn: 'span 2'
+        }
+      };
+    case 9:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(100px, 1fr)',
+      };
+
+    default:
+      return {
+        ...baseStyle,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridAutoRows: 'minmax(100px, 1fr)',
+      };
+  }
+};
+

@@ -6,8 +6,13 @@ interface IModals {
   addContactModal: boolean;
   attachFileModal: {
     isOpened: boolean;
+    fileInputRef: React.RefObject<HTMLInputElement> | null;
     attachments: any[];
   };
+  imageModal: {
+    isOpened: boolean;
+    imageSrc: string;
+  }
 }
 
 export const useModals = create<IModals>(() => ({
@@ -16,7 +21,12 @@ export const useModals = create<IModals>(() => ({
   addContactModal: false,
   attachFileModal: {
     isOpened: false,
+    fileInputRef: null,
     attachments: []
+  },
+  imageModal: {
+    isOpened: false,
+    imageSrc: ''
   }
 }));
 
@@ -41,17 +51,44 @@ export const toggleAddContactModal = () => {
   }));
 };
 
-export const toggleAttchFileModal = (ref: React.RefObject<HTMLInputElement>) => {
-  if(ref.current) {
-    ref.current.value = '';
-  }
-  useModals.setState((state) => ({
-    ...state,
-    attachFileModal: {
-      isOpened: !state.attachFileModal.isOpened,
-      attachments: !state.attachFileModal.isOpened ? state.attachFileModal.attachments : []
+export const toggleAttchFileModal = () => {
+  useModals.setState((state) => {
+    if(state.attachFileModal.fileInputRef?.current) {
+      state.attachFileModal.fileInputRef.current.value = '';
     }
-  }));
+    return {
+      ...state,
+      attachFileModal: {
+        fileInputRef: state.attachFileModal.fileInputRef,
+        isOpened: !state.attachFileModal.isOpened,
+        attachments: !state.attachFileModal.isOpened ? state.attachFileModal.attachments : []
+      }
+    };
+  });
+};
+
+export const toggleImageModal = () => {
+  useModals.setState((state) => {
+    return {
+      ...state,
+      imageModal: {
+        ...state.imageModal,
+        isOpened: !state.imageModal.isOpened
+      }
+    };
+  });
+};
+
+export const setImageModalSrc = (src: string) => {
+  useModals.setState((state) => {
+    return {
+      ...state,
+      imageModal: {
+        ...state.imageModal,
+        imageSrc: src
+      }
+    };
+  });
 };
 
 export const setAttachments = (attachments: any[]) => {
@@ -63,6 +100,28 @@ export const setAttachments = (attachments: any[]) => {
         ...state.attachFileModal.attachments,
         ...attachments
       ]
+    }
+  }));
+};
+
+export const removeAttachment = (id: number) => {
+  useModals.setState((state) => {
+    return {
+      ...state,
+      attachFileModal: {
+        ...state.attachFileModal,
+        attachments: state.attachFileModal.attachments.filter((attach) => attach.id !== id)
+      }
+    };
+  });
+};
+
+export const setFileInputRef = (ref: React.RefObject<HTMLInputElement>) => {
+  useModals.setState((state) => ({
+    ...state,
+    attachFileModal: {
+      ...state.attachFileModal,
+      fileInputRef: ref
     }
   }));
 };
