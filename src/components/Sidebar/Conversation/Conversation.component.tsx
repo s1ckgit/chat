@@ -1,45 +1,35 @@
 import { useCallback, useEffect } from 'react';
-import { setChatId, setReceiverId, setReceiverName } from '../../../store/chat';
+import { setChatId, setReceiver } from '../../../store/chat';
 import { useColors, useTransitions, useTypography } from '../../../theme/hooks';
-import { formatDate } from '../../../utils';
-import styles from './Conversation.module.css';
 
-import { Avatar, Badge, Box, Typography } from '@mui/material';
-import { useStatus, useUnreadCount, useUpdateLastMessage } from '../../../utils/hooks';
-import { useUserMeQuery } from '../../../api/hooks/users';
+import { Badge, Box, Typography } from '@mui/material';
+import { useStatus, useUpdateLastMessage } from '../../../utils/hooks';
 import { useSocket } from '../../../store/socket';
-import { cld } from '../../../utils/сloudinary';
+
+import ConversationLastMessage from './ConversationLastMessage.component';
+import { enableSocketEventListeners } from '../../../utils';
+import UserAvatarComponent from '@/components/UserAvatar/UserAvatar.component';
 
 interface IConversationProps {
-  id: string;
-  receiver: User;
-  lastMessage?: Message
+  conversation: Conversation;
 }
 
-const Conversation = ({ lastMessage, id, receiver }: IConversationProps) => {
+const Conversation = ({ conversation }: IConversationProps) => {
+  const { id } = conversation;
+  const lastMessage = conversation.lastMessage ?? undefined;
+  const receiver = conversation.participants[0];
+
   const colors = useColors();
   const transitions = useTransitions();
   const typography = useTypography();
+  const status = useStatus(receiver.id);
 
-  const { socket } = useSocket();
-  const { data: user } = useUserMeQuery();
+  const { messagesSocket: socket } = useSocket();
 
   const updateLastMessage = useUpdateLastMessage();
-  const count = useUnreadCount(id);
-  const avatarSrc = receiver.avatarVersion ? cld.image(`avatars/${receiver.id}/thumbnail`).setVersion(receiver.avatarVersion).toURL() : '';
-  
-  let createdAt;
-  let content;
-  if(lastMessage) {
-    createdAt = lastMessage.createdAt;
-    content = lastMessage.content;
-  }
-  const status = useStatus(receiver.id);
-  const date = createdAt ? formatDate(createdAt) : null;
 
   const onClick = () => {
-    setReceiverName(receiver.login);
-    setReceiverId(receiver.id);
+    setReceiver(receiver);
     setChatId(id);
   };
   
@@ -47,15 +37,30 @@ const Conversation = ({ lastMessage, id, receiver }: IConversationProps) => {
     updateLastMessage({ conversationId: id, lastMessage: message });
   }, [id, updateLastMessage]);
 
-  useEffect(() => {
-    if(socket) {
-      socket.on(`new_message_${id}`,onNewMessage);
-
-      return () => {
-        socket.off(`new_message_${id}`, onNewMessage);
-      };
+  const onLastMessageRead = useCallback(({ ids }: { ids: Message['id'][] }) => {
+    const lastMessageIsRead = ids.some((id) => id === lastMessage!.id);
+    if(lastMessageIsRead) {
+      updateLastMessage({ conversationId: id, lastMessage: {
+        ...lastMessage!,
+        status: 'read'
+      } });
     }
-  }, [socket, onNewMessage, id, user?.id]);
+  }, [id, lastMessage, updateLastMessage]);
+
+  useEffect(() => {
+    if(!socket) return;
+    const cleanup = enableSocketEventListeners(socket, [
+      {
+        eventName: `messages_read_${id}`,
+        eventCallback: onLastMessageRead
+      },
+      {
+        eventName: `new_message_${id}`,
+        eventCallback: onNewMessage,
+      },
+    ]);
+    return cleanup;
+  }, [id, onLastMessageRead, onNewMessage, socket]);
 
   useEffect(() => {
     if(socket) {
@@ -65,10 +70,20 @@ const Conversation = ({ lastMessage, id, receiver }: IConversationProps) => {
     }
   }, [id, socket]);
 
-  if(status === '' && count === undefined) return null;
+  if(status === '') return null;
 
   return (
-    <Box onClick={onClick} className={styles.conversation} sx={{ 
+    <Box 
+      onClick={onClick} 
+      sx={{ 
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr',
+        columnGap: '12px',
+        padding: '12px',
+        alignItems: 'center',
+        justifyContent: 'center',
+      
+        cursor: 'pointer',
        '&:hover': {
           backgroundColor: colors['ghost-light'],
           transition: 'background-color',
@@ -92,24 +107,31 @@ const Conversation = ({ lastMessage, id, receiver }: IConversationProps) => {
         overlap="circular"
         variant="dot"
       >
-        <Avatar src={avatarSrc} />
+        <UserAvatarComponent
+          id={receiver.id}
+        />
       </Badge>
-      <div className={styles['conversation-info']}>
-        <p style={{ ...typography.name }} className={styles['conversation-name']}>{receiver.login}</p>
-        <p style={{ ...typography.info, color: colors['ghost-main'] }} className={styles['conversation-date']}>{date}</p>
-        <Typography sx={{ 
-            ...typography['messages-text'], 
-            color: colors['ghost-main'],
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow:'ellipsis',
-         }} 
-         className={styles['conversation-message']}
-         >
-          {content}
+      <Box 
+        component='div'
+        sx={{
+          display: 'grid',
+          rowGap: '4px',
+          gridTemplateColumns: '1fr auto',
+          gridTemplateRows: '1fr 1fr',
+        }}
+      >
+        <Typography 
+          component='p' 
+          sx={{ ...typography.name }} 
+        >
+          {receiver.login}
         </Typography>
-        <Badge badgeContent={count} color='primary' max={99} />
-      </div>
+        {
+          lastMessage ? (
+            <ConversationLastMessage message={lastMessage} />
+          ) : null
+        }
+      </Box>
     </Box>
   );
 };

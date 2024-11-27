@@ -1,7 +1,40 @@
 import { format, isToday, isThisWeek, differenceInHours, differenceInDays, isYesterday } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { IPendingMessage } from '../types';
-import axios, { AxiosResponse } from 'axios';
+import type { Socket } from 'socket.io-client';
+
+export const scrollChat = (chatWindowElement: HTMLDivElement, messageId: string | null, smooth?: boolean) => {
+  if(!messageId) {
+    chatWindowElement.scrollTop = chatWindowElement.scrollHeight;
+    return;
+  }
+
+  const messageElement = chatWindowElement.querySelector(`[data-message-id="${messageId}"]`);
+
+  if(!messageElement) {
+    requestAnimationFrame(() => {
+      chatWindowElement.scrollTop = chatWindowElement.scrollHeight;
+    });
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    messageElement.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'center' });
+  });
+
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const enableSocketEventListeners = (socket: Socket, config: {eventName: string; eventCallback: (vars: any) => void}[]) => {
+  config.forEach((event) => {
+    socket.on(event.eventName, event.eventCallback);
+  });
+
+  return () => {
+    config.forEach((event) => {
+      socket.off(event.eventName, event.eventCallback);
+    });
+  };
+};
 
 export const formatDate = (date: Date) => {
   if(isToday(date)) {
@@ -16,7 +49,6 @@ export const formatDate = (date: Date) => {
 export const formatStatus = (input: string): string => {
   if (input === 'online') return input;
 
-  // Парсим таймстамп из строки после двоеточия
   const timestamp = Number(input.split(':')[1]);
   const date = new Date(timestamp);
 

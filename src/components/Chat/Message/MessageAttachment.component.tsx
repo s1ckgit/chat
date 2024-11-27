@@ -1,14 +1,15 @@
 import { Box, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
-import { setImageModalSrc, toggleImageModal } from "../../../../store/modals";
+import { setImageModalSrc, toggleImageModal } from "../../../store/modals";
+import type { MessageAttachments } from "../../../types";
 
 interface IMesssageAttachment {
-  data: any;
+  data: MessageAttachments;
 }
 
 const MessageAttachment = ({ data }: IMesssageAttachment) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [src, setSrc] = useState(data.previewUrl);
+  const [isLoading, setIsLoading] = useState(false);
+  const [src, setSrc] = useState(data.originalUrl);
 
   const onOpenImage = () => {
     if(isLoading) return;
@@ -18,16 +19,18 @@ const MessageAttachment = ({ data }: IMesssageAttachment) => {
 
   useEffect(() => {
     const img = new Image();
-    img.src = data.previewUrl;
+    img.src = data.originalUrl;
+    if(img.complete && img.naturalWidth > 0) {
+      return;
+    } 
+
     setIsLoading(true);
     img.onload = () => {
       setSrc(img.src);
-      img.src = data.originalUrl;
-      img.onload = () => {
-        setIsLoading(false);
-        setSrc(img.src);
-      };
+      setIsLoading(false);
     };
+
+    setSrc(data.previewUrl);
   }, [data.originalUrl, data.previewUrl]);
 
   if(src == '') return;

@@ -1,5 +1,6 @@
 import { isAxiosError } from 'axios';
 import api from '../client';
+import { IApiResponse } from '../../types';
 
 const controller = new AbortController();
 
@@ -30,31 +31,30 @@ export const getContacts = async () => {
 };
 
 export const addContact = async (login: User['login']) => {
-  const { data } = await api.post('/contacts/add', { login });
+  const { data } = await api.post<Contact>('/contacts/add', { login });
 
   return data;
 };
 
 export const changeUserData = async (userData: Partial<User>) => {
-  const { data } = await api.post('/me', userData);
+  const { data } = await api.post<User>('/me', userData);
 
   return data;
 };
 
 export const changeUserAvatar = async (formData: FormData) => {
-  const { data } = await api.post('/me/avatar', formData, {
+  const { data } = await api.post<IApiResponse>('/me/avatar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   });
 
-  console.log(data);
-
   return data;
 };
 
-export const getUserProp = async (id: string, prop: string) => {
-  const { data } = await api.get(`/user/${id}/${prop}`);
+export const getUserProp = async <K extends keyof User>(id: string | undefined, prop: K) => {
+  if(!id) return;
+  const { data } = await api.get<User[K]>(`/user/${id}/${prop}`);
 
-  return data[prop];
+  return data;
 };

@@ -1,36 +1,38 @@
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+
 import { userKeys } from "../queries/queryKeys";
 import { addContact, changeUserAvatar, changeUserData, getContacts, getMyInfo, getUserProp } from "../services/users";
-import { AxiosError } from "axios";
 import { logout } from "../services/auth";
-import type { IMutationCallbacks } from "../../types";
+import type { IApiResponse, IMutationCallbacks } from "../../types";
 
 export const useUserMeQuery = () => {
-  const id = localStorage.getItem('id');
-
   return useQuery<User | null, AxiosError>({
-    queryKey: userKeys.me(id),
+    queryKey: userKeys.me,
     queryFn: getMyInfo,
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
   });
 };
 
 export const useContactsQuery = () => {
   return useQuery<Contact[], AxiosError>({
     queryKey: userKeys.contacts,
-    queryFn: getContacts
+    queryFn: getContacts,
+    refetchOnWindowFocus: false
   });
 };
 
-export const useGetUserPropQuery = (id: string, prop: string) => {
-  return useQuery<User['avatarVersion'], AxiosError>({
+export const useGetUserPropQuery = <K extends keyof User>(id: string | undefined, prop: K) => {
+  return useQuery<User[K] | undefined, AxiosError>({
     queryKey: userKeys.prop(id, prop),
-    queryFn: () => getUserProp(id, prop)
+    queryFn: () => getUserProp(id, prop),
+    refetchOnWindowFocus: false
   });
 };
 
 export const useAddContactMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
-  return useMutation<void, unknown, string>({
+  return useMutation<Contact, AxiosError, string>({
     mutationFn: (login) => addContact(login),
     onSuccess,
     onError
@@ -38,7 +40,7 @@ export const useAddContactMutation = ({ onSuccess, onError }: IMutationCallbacks
 };
 
 export const useLogoutMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
-  return useMutation({
+  return useMutation<void, AxiosError>({
     mutationFn: logout,
     onSuccess,
     onError
@@ -46,7 +48,7 @@ export const useLogoutMutation = ({ onSuccess, onError }: IMutationCallbacks) =>
 };
 
 export const useChangeUserDataMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
-  return useMutation({
+  return useMutation<User, AxiosError, Partial<User>>({
     mutationFn: (userData) => changeUserData(userData),
     onSuccess,
     onError
@@ -54,7 +56,7 @@ export const useChangeUserDataMutation = ({ onSuccess, onError }: IMutationCallb
 };
 
 export const useChangeUserAvatarMutation = ({ onSuccess, onError }: IMutationCallbacks) => {
-  return useMutation({
+  return useMutation<IApiResponse, AxiosError, FormData>({
     mutationFn: (formData: FormData) => changeUserAvatar(formData),
     onSuccess,
     onError

@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { useChat } from '../../store';
+import { useChat } from '@/store/chat';
 
 import ChatInput from './ChatInput/ChatInput.component';
 import ChatWindow from './ChatWindow/ChatWindow.component';
@@ -8,7 +8,7 @@ import AttachFileModal from './AttachFileModal/AttachFileModal.component';
 
 
 const Chat = () => {
-  const { receiverName, id } = useChat();
+  const { receiver, id } = useChat();
 
   return (
     <Box 
@@ -16,16 +16,16 @@ const Chat = () => {
         display: 'grid',
         overflow: 'hidden',
         height: '100vh',
-        gridTemplateRows: receiverName || id ? 'auto 1fr 80px' : '1fr'
+        gridTemplateRows: receiver || id ? 'auto 1fr 80px' : '1fr'
       }}
     >
       <AttachFileModal />
   
-      {(receiverName || id) && <ChatBar />}
+      {(receiver || id) && <ChatBar />}
 
       <ChatWindow />
 
-      {(receiverName || id) && <ChatInput />}
+      {(receiver || id) && <ChatInput />}
 
     </Box>
   );

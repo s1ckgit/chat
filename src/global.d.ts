@@ -1,5 +1,4 @@
-export {};
-
+import type { MessageAttachments } from "./types"; 
 declare global {
   interface User {
     id: string;
@@ -7,7 +6,10 @@ declare global {
     password: string;
     refreshToken: string;
     status: string;
-    avatarVersion?: string;
+    avatars: {
+      thumbnailUrl: string,
+      originalUrl: string
+    };
     contacts?: Contact[];
     contactOf?: Contact[];
     conversations?: Conversation[];
@@ -22,7 +24,7 @@ declare global {
     user: User;
     contact: User;
     conversation?: Conversation;
-    createdAt: Date;
+    createdAt: string;
   }
 
   interface Conversation {
@@ -32,7 +34,7 @@ declare global {
     lastMessage?: Message;
     lastMessageId?: string;
     contacts?: Contact[];
-    createdAt: Date;
+    createdAt: string;
   }
 
   interface Message {
@@ -40,9 +42,9 @@ declare global {
     content: string;
     senderId: string;
     conversationId: string;
-    createdAt: Date;
+    createdAt: string;
     status: 'pending' | 'delivered' | 'read';
-    attachments?: any[];
+    attachments?: MessageAttachments[];
     sender: User;
     conversation: Conversation;
     lastConversation: Conversation; 

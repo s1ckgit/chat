@@ -1,5 +1,5 @@
 import { Box, IconButton, Typography } from "@mui/material";
-import { useChat, useUser } from "../../../store";
+import { useChat } from "@/store/chat";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
 import { useColors, useTransitions, useTypography } from "../../../theme/hooks";
@@ -11,10 +11,9 @@ const ChatBar = () => {
   const transitions = useTransitions();
   const typography = useTypography();
 
-  const { receiverName, id: chatId } = useChat();
-  const { id } = useUser();
+  const { receiver, id: chatId } = useChat();
 
-  const status = useStatus(id!);
+  const status = useStatus(receiver?.id ?? '');
   const isTyping = useIsTyping(chatId!);
 
   return (
@@ -42,7 +41,7 @@ const ChatBar = () => {
 
           }}
         >
-          {receiverName}
+          {receiver?.login}
         </Typography>
         <Typography 
           sx={{
@@ -51,7 +50,7 @@ const ChatBar = () => {
           }}
         >
           {
-            isTyping ? <MessageTyping /> : status
+            isTyping ? <MessageTyping /> : status.length ? status : null
           }
         </Typography>
       </Box>

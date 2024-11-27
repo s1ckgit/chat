@@ -1,28 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { TextField, Button, Container, Typography } from '@mui/material';
-
-import styles from './CredentialsForm.module.css';
 import { Link } from 'react-router-dom';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { TextField, Button, Container, Typography, Box } from '@mui/material';
+
+import { loginSchema, registrationSchema } from '../../utils/schemas';
 import { useAuthorizeUserMutation, useNewUserMutation } from '../../api/hooks/auth';
-
-// Схема валидации для логина
-const loginSchema = z.object({
-  login: z.string().min(1, { message: 'Логин обязателен' }),
-  password: z.string().min(8, { message: 'Пароль должен содержать минимум 8 символов' }),
-});
-
-// Схема валидации для регистрации
-const registrationSchema = z.object({
-  login: z.string().min(1, { message: 'Логин обязателен' }),
-  password: z.string().min(8, { message: 'Пароль должен содержать минимум 8 символов' }),
-  confirmPassword: z.string().min(8, { message: 'Пароль подтверждения обязателен' }),
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'Пароли не совпадают',
-  path: ['confirmPassword'],
-});
 
 const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
   const LoginForm = () => {
@@ -42,9 +25,22 @@ const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
     };
   
     return (
-      <Container maxWidth={false} className={styles.container}>
+      <Container 
+        sx={{
+          maxWidth: '640px'
+        }}
+        maxWidth={false} 
+      >
         <Typography variant="h4">Логин</Typography>
-        <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+        <form
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            rowGap: '24px'
+          }} 
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <TextField
             label="Логин"
             {...register('login')}
@@ -60,11 +56,26 @@ const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
             helperText={errors.password ? errors.password.message as string : ''}
             fullWidth
           />
-          <Button className={styles.button} type="submit" variant="contained" color="primary">Войти</Button>
-          <div className={styles.caption}>
-            <p>Ещё нет аккаунта?</p>
+          <Button 
+            type="submit" 
+            variant="contained" 
+            color="primary"
+          >
+            Войти
+          </Button>
+          <Box
+            component='div' 
+            sx={{
+              textAlign: 'center'
+            }}
+          >
+            <Typography
+              component='p'
+            >
+              Ещё нет аккаунта?
+            </Typography>
             <Link to='/registration'>Зарегистрироваться</Link>
-          </div>
+          </Box>
         </form>
       </Container>
     );
@@ -89,9 +100,22 @@ const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
     };
   
     return (
-      <Container maxWidth={false} className={styles.container}>
+      <Container
+        sx={{
+          maxWidth: '640px'
+        }} 
+        maxWidth={false}
+      >
         <Typography variant="h4">Регистрация</Typography>
-        <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+        <form
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            rowGap: '24px'
+          }}   
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <TextField
             label="Логин"
             {...register('login')}
@@ -115,11 +139,25 @@ const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
             error={!!errors.confirmPassword}
             fullWidth
           />
-          <Button className={styles.button} type="submit" variant="contained" color="primary">Зарегистрироваться</Button>
-          <div className={styles.caption}>
-            <p>Есть аккаунт?</p>
+          <Button
+            type="submit" 
+            variant="contained" 
+            color="primary"
+          >
+            Зарегистрироваться
+          </Button>
+          <Box 
+            sx={{
+              textAlign: 'center'
+            }}
+          >
+            <Typography
+              component='p'
+            >
+              Есть аккаунт?
+            </Typography>
             <Link to='/login'>Войти</Link>
-          </div>
+          </Box>
         </form>
       </Container>
     );

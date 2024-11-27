@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Divider, IconButton, Drawer as MUIDrawer } from "@mui/material";
+import { Box, Button, Divider, IconButton, Drawer as MUIDrawer } from "@mui/material";
 
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -7,26 +7,32 @@ import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ContactsIcon from '@mui/icons-material/Contacts';
 
-import styles from './Drawer.module.css';
-import { useColors, useTransitions, useTypography } from "../../../theme/hooks";
+import { useColors, useTransitions, useTypography } from "../../theme/hooks";
 import { ChangeEvent, useState } from "react";
-import { toggleContactsModal, toggleDrawer, useModals } from "../../../store/modals";
-import { useChangeUserAvatarMutation, useLogoutMutation, useUserMeQuery } from "../../../api/hooks/users";
-import { cld } from "../../../utils/сloudinary";
+import { toggleContactsModal, toggleDrawer, useModals } from "../../store/modals";
+import { useChangeUserAvatarMutation, useLogoutMutation, useUserMeQuery } from "../../api/hooks/users";
+import UserAvatarComponent from "../UserAvatar/UserAvatar.component";
+import { useSocket } from "@/store/socket";
 
 const Drawer = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const onDarkModeToggle = () => setTheme((prev) => prev === 'light' ? 'dark' : 'light');
-  const [isHover, setIsHover] = useState(false);
+  const { usersSocket } = useSocket();
 
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isHover, setIsHover] = useState(false);
+  
   const typography = useTypography();
   const colors = useColors();
   const transitions = useTransitions();
+  
+  const { data: me } = useUserMeQuery();
+  const isOpened = useModals(state => state.drawer);
 
-  const { data: me, refetch } = useUserMeQuery();
+  const onDarkModeToggle = () => setTheme((prev) => prev === 'light' ? 'dark' : 'light');
   const changeUserAvatarMutation = useChangeUserAvatarMutation({
     onSuccess: () => {
-      refetch();
+      if(!usersSocket) return;
+
+      usersSocket.emit(`user_avatar_update`, { id: me?.id });
     }
   });
   const logoutMutation = useLogoutMutation({
@@ -36,13 +42,10 @@ const Drawer = () => {
     },
     onError: (e: unknown) => console.error(e)
   });
-  const avatarSrc = (me && me.avatarVersion) ? cld.image(`avatars/${me.id}/thumbnail`).setVersion(me.avatarVersion).toURL() : '';
 
   const onLogout = () => {
-    logoutMutation.mutate({});
+    logoutMutation.mutate();
   };
-
-  const isOpened = useModals(state => state.drawer);
 
   const onUploadAvatar = async (e: ChangeEvent<HTMLInputElement>) => {
     if(e.target.files?.length) {
@@ -64,8 +67,24 @@ const Drawer = () => {
       anchor='left' 
       open={isOpened}
     >
-      <div className={styles.drawer}>
-        <div className={styles['drawer-top']}>
+      <Box 
+        component='div'
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '300px',
+          height: '100%',
+        }}
+      >
+        <Box
+          component='div'
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            rowGap: '26px',
+            padding: '16px 32px',
+          }} 
+        >
           <Box
             component='div'
             onMouseEnter={() => setIsHover(true)}
@@ -77,9 +96,9 @@ const Drawer = () => {
               borderRadius: '100%'
             }}
           >
-            <Avatar
+            <UserAvatarComponent
               sx={{ width: 96, height: 96 }} 
-              src={avatarSrc}
+              id={me?.id}
             />
 
             <Box
@@ -113,9 +132,17 @@ const Drawer = () => {
             </Box>
           </Box>
           <p style={{ ...typography.name }}>{me?.login}</p>
-        </div>
+        </Box>
         <Divider sx={{ color: colors['ghost-light'] }} />
-        <div className={styles['drawer-actions']}>
+        <Box 
+          component='div'
+          sx={{
+            padding: '4px 0px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyItems: 'start',
+          }}
+        >
           <Button onClick={() => toggleContactsModal()} sx={{ color: "#000", justifyContent: 'start', paddingLeft: '32px' }} startIcon={<ContactsIcon />}>Контакты</Button>
           <Button sx={{ color: "#000", justifyContent: 'start', paddingLeft: '32px' }} startIcon={<SettingsIcon />}>Настройки</Button>
           <Button 
@@ -137,7 +164,7 @@ const Drawer = () => {
           >
             Тёмный режим
           </Button>
-        </div>
+        </Box>
 
         <Button
           variant="text"
@@ -149,7 +176,7 @@ const Drawer = () => {
         >
           Выйти
         </Button>
-      </div>
+      </Box>
     </MUIDrawer>
   );
 };

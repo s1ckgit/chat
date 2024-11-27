@@ -1,11 +1,30 @@
 import { Box, Button, CircularProgress } from "@mui/material";
 import { useContactsQuery } from "../../../api/hooks/users";
 import { toggleContactsModal } from "../../../store/modals";
-import { useChatWindow } from "../../../utils/hooks";
+import { useChatWindowComponent } from "../../../utils/hooks";
+import { useEffect, useRef } from "react";
+import { setChatWindowElement } from "@/store/chat";
+
+import ScrollButtonComponent from "./ScrollButton.component";
 
 const ChatWindow = () => {
-  const { renderMessages, receiverId, isMessagesFetching, chatWindowRef, id } = useChatWindow();
+  const { 
+    messageGroups, 
+    handleOnScrollDownButton, 
+    receiver, 
+    isMessagesFetching,
+    showScrollButton,
+    id 
+  } = useChatWindowComponent();
   const { data: contacts, isLoading: contactsLoading } = useContactsQuery();
+
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if(chatWindowRef.current) {
+      setChatWindowElement(chatWindowRef.current);
+    }
+  }, [chatWindowRef, isMessagesFetching]);
 
   return (
     isMessagesFetching ? (
@@ -13,26 +32,16 @@ const ChatWindow = () => {
         <CircularProgress />
       </Box>
     ) : (
-      <Box 
-        ref={chatWindowRef} 
+      <Box
+        component='div'
         sx={{ 
-          overflowY: 'auto', 
-          position: 'relative',
           height: '100%',
-          display: 'grid',
-          gridTemplateRows: 'auto',
-          gridAutoRows: 'min-content',
-        
-          gridTemplateColumns: '1fr',
-          rowGap: '12px',
-        
-          padding: '10px 16px',
-        
+          overflowY: 'hidden', 
           background: 'linear-gradient(to bottom, #c8e6c9, #a5d6a7)'
         }} 
       >
         { 
-          (!receiverId || !id) ? (
+          (!receiver?.id || !id) ? (
             <>
               <Box
                 sx={{
@@ -97,9 +106,37 @@ const ChatWindow = () => {
             </>
           ) : (
             <>
-              <Box sx={{ height: '100%' }} />
-              { 
-                renderMessages()
+              <Box
+                ref={chatWindowRef}
+                component='div'
+                sx={{
+                  overflowY: 'auto', 
+                  display: 'grid',
+                  height: '100%',
+                  gridTemplateRows: '1fr',
+                  gridAutoRows: 'auto',
+                  gridTemplateColumns: '1fr',
+                  rowGap: '24px',
+                  padding: '10px 16px',
+                }}
+              >
+                <Box 
+                  sx={{ 
+                    height: '100%', 
+                    position: 'relative' 
+                  }} 
+                />
+                { 
+                  messageGroups
+                }
+              </Box>
+              {
+                showScrollButton && (
+                  <ScrollButtonComponent
+                    chatId={id}
+                    onClick={handleOnScrollDownButton}
+                  />
+                )
               }
             </>
           )

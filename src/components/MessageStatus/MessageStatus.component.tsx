@@ -1,7 +1,7 @@
 import { CircularProgress, Typography } from "@mui/material";
 import CheckIcon from '@mui/icons-material/Check';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
-import { useColors, useTypography } from "../../../../theme/hooks";
+import { useColors, useTypography } from "../../theme/hooks";
 
 
 interface IMessageStatusProps {
@@ -22,6 +22,7 @@ const MesageStatus = ({ status, date, isInitiator, variant = 'default' }: IMessa
         ...typography['messages-date'], 
         color: isInitiator ? colors['messages-initiator-date'] : colors['messages-receiver-date'],
         paddingLeft: '10px',
+        justifySelf: 'center',
         ...(variant === 'no-text' ? {
           position: 'absolute',
           bottom:'8px',

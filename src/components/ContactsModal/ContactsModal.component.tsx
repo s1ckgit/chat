@@ -1,17 +1,17 @@
 import { Box, Button, CircularProgress, Container, Divider, InputAdornment, Modal, TextField, Typography } from "@mui/material";
-import { toggleAddContactModal, toggleContactsModal, useModals } from "../../../../store/modals";
+import { toggleAddContactModal, toggleContactsModal, useModals } from "@/store/modals";
 import SearchIcon from '@mui/icons-material/Search';
-import { useContactsQuery } from "../../../../api/hooks/users";
-import Contact from "../../Contact/Contact.component";
+import { useContactsQuery } from "@/api/hooks/users";
+import Contact from "@/components/Contact/Contact.component";
 import AddContactsModal from "../AddContactsModal/AddContactsModal.component";
 import { useCallback, useEffect } from "react";
-import { useSocket } from "../../../../store/socket";
+import { useSocket } from "@/store/socket";
 
 const ContactsModal = () => {
   const isOpened = useModals(state => state.contactsModal);
   const isAddOpened = useModals(state => state.addContactModal);
   const { data, isFetching, refetch } = useContactsQuery();
-  const { socket } = useSocket();
+  const { messagesSocket: socket } = useSocket();
 
   const handleNewConversation = useCallback(() => {
     refetch();
@@ -102,7 +102,7 @@ const ContactsModal = () => {
                       <CircularProgress />
                     </Box>
                   ) : data && (
-                    data.map((contact) => <Contact key={contact.id} conversationId={contact.conversationId} id={contact.contactId} login={contact.contact.login} />)
+                    data.map((contact) => <Contact key={contact.id} conversationId={contact.conversationId} contactUser={contact.contact} />)
                   )
                 }
               </Box>

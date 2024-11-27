@@ -1,20 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { deletePendingMessage, setChatId, useChat } from "../store/chat";
+import { deletePendingMessage, setChatId, setChatInput, setPendingMessage, setShowScrollButton, useChat } from "../store/chat";
 import { useQueryClient } from "@tanstack/react-query";
-import { messagesKeys, userKeys } from "../api/queries/queryKeys";
+import { messagesKeys } from "../api/queries/queryKeys";
 import debounce from 'lodash.debounce';
 import { useSocket } from "../store/socket";
-import { useGetUserPropQuery, useUserMeQuery } from "../api/hooks/users";
-import { formatStatus, preloadImages } from ".";
-import { useMessagesQuery } from "../api/hooks/messages";
-import Message from "../components/Chat/Message/Message.component";
-import { IPendingMessage } from "../types";
-import { cld } from "./сloudinary";
+import { useUserMeQuery } from "../api/hooks/users";
+import { enableSocketEventListeners, formatStatus, preloadImages, scrollChat } from ".";
+import { useMessagesQuery, useSendMessageAttachmentsMutation } from "../api/hooks/messages";
+import { IClientMessageAttachments, IPendingMessage, MessagesApiResponse } from "../types";
 import { format } from "date-fns";
+import { v4 as uuidv4 } from 'uuid';
+import { toggleAttachFileModal } from "../store/modals";
+import throttle from "lodash.throttle";
+import MessagesGroup from "@/components/Chat/MessagesGroup/MessagesGroup.component";
 
 
-export const useStatus = (id: string) => {
+export const useStatus = (id: User['id']) => {
   const { statusSocket } = useSocket();
   const [status, setStatus] = useState('');
 
@@ -26,35 +28,46 @@ export const useStatus = (id: string) => {
   );
 
   useEffect(() => {
-    if (!id) return;
-  
-    statusSocket?.emit('get_status', { id });
-    statusSocket?.on(`status_${id}`, handleChangeStatus);
+    if (!id || !statusSocket) return;
+    
+    const cleanup = enableSocketEventListeners(statusSocket, [
+      {
+        eventName: `status_${id}`,
+        eventCallback: handleChangeStatus
+      }
+    ]);
+
+    statusSocket.emit('get_status', { id });
   
     return () => {
-      statusSocket?.off(`status_${id}`, handleChangeStatus);
-      statusSocket?.emit('get_status_off', { id });
+      cleanup();
+      statusSocket.emit('get_status_off', { id });
     };
   }, [id, statusSocket, handleChangeStatus]);
 
   return status;
 };
 
-export const useUnreadCount = (conversationId: string) => {
-  const { socket } = useSocket();
+export const useUnreadCount = (conversationId: Conversation['id']) => {
+  const { messagesSocket: socket } = useSocket();
 
-  const [count, setCount] = useState<number>();
+  const [count, setCount] = useState<number>(0);
 
   const on_unread_count = ({ unreadCount }: { unreadCount: number }) => {
     setCount(unreadCount);
   };
 
   useEffect(() => {
-    socket?.on(`unread_count_${conversationId}`, on_unread_count);
+    if(!socket) return;
 
-    return () => {
-      socket?.off(`unread_count_${conversationId}`, on_unread_count);
-    };
+    const cleanup = enableSocketEventListeners(socket, [
+      {
+        eventName: `unread_count_${conversationId}`,
+        eventCallback: on_unread_count
+      }
+    ]);
+
+    return cleanup;
 
   }, [conversationId, socket]);
 
@@ -64,9 +77,9 @@ export const useUnreadCount = (conversationId: string) => {
 export const useUpdateLastMessage = () => {
   const queryClient = useQueryClient();
 
-  const updateLastMessage = useCallback(({ conversationId, lastMessage }) => {
+  const updateLastMessage = useCallback(({ conversationId, lastMessage }: { conversationId: Conversation['id'], lastMessage: Message }) => {
 
-    queryClient.setQueryData(messagesKeys.conversations, (oldConversations: any[]) => {
+    queryClient.setQueryData(messagesKeys.conversations, (oldConversations: Conversation[]) => {
       if(!oldConversations) return [];
 
       return oldConversations.map((c) => {
@@ -84,72 +97,29 @@ export const useUpdateLastMessage = () => {
   return updateLastMessage;
 };
 
-// export const useUpdateAttachmentProgress = () => {
-//   const queryClient = useQueryClient();
-
-//   const updateAttachmentProgress = useCallback(({ conversationId, messageId, progress }) => {
-//     queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: any[]) => {
-//       if(!oldMessages) return;
-
-//       return oldMessages.map((m) => {
-//         if(m.id === messageId) {
-//           return {
-//             ...m,
-//             attachments: {
-//               ...m.attachments,
-//               attachmentProgress: progress
-//             }
-//           };
-//         }
-//         return m;
-//       });
-//     });
-//   }, [queryClient]);
-
-//   return updateAttachmentProgress;
-// };
-
-// export const useUpdateAttachmentsUrl = () => {
-//   const queryClient = useQueryClient();
-
-//   const updateAttachmentsUrl = useCallback(({ conversationId, messageId, url }) => {
-//     queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: any[]) => {
-//       if(!oldMessages) return;
-
-//       return oldMessages.map((m) => {
-//         if(m.id === messageId) {
-//           return {
-//             ...m,
-//             attachments: [{
-//               secure_url: url,
-//               preview_url: url
-//             }]
-//           };
-//         }
-//         return m;
-//       });
-//     });
-//   }, [queryClient]);
-
-//   return updateAttachmentsUrl;
-// };
-
 export const useAddMessageToList = () => {
   const queryClient = useQueryClient();
 
-  const addMessageToList = useCallback(({ conversationId, message }: { conversationId: string; message: Message }) => {
-    queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: Message[]) => {
+  const addMessageToList = useCallback(({ conversationId, message, dateGroup }: { conversationId: Conversation['id']; message: Message; dateGroup: string; }) => {
+    queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: MessagesApiResponse) => {
       if(!oldMessages) return;
-      return [...oldMessages, message];
+
+      return [...oldMessages.map((group) => {
+        if(group.date === dateGroup) {
+          return {
+            ...group,
+            messages: [...group.messages, message]
+          };
+        }
+      })];
     });
   }, [queryClient]);
 
   return addMessageToList;
 };
 
-
 export function useConversationReadMessages() {
-  const { socket } = useSocket();
+  const { messagesSocket: socket } = useSocket();
   const { id } = useChat();
 
   const readMessageIds = useRef(new Set());
@@ -173,8 +143,8 @@ export function useConversationReadMessages() {
 export const useMarkMessageAsRead = () => {
   const queryClient = useQueryClient();
 
-  const markMessageAsRead = useCallback(({ conversationId, ids }: { conversationId: string; ids: string[] }) => {
-    queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: Message[] | undefined) => {
+  const markMessageAsRead = useCallback(({ conversationId, ids }: { conversationId: Conversation['id']; ids: Message['id'][] }) => {
+    queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: Message[]) => {
       if (!oldMessages) return;
 
       return oldMessages.map((m) => {
@@ -189,30 +159,16 @@ export const useMarkMessageAsRead = () => {
   return markMessageAsRead;
 };
 
-export const useChangeAvatarSrc = () => {
-  const queryClient = useQueryClient();
-  const { data: user } = useUserMeQuery();
-
-  const changeAvatarSrc = useCallback((avatarSrc: string) => {
-    queryClient.setQueryData(userKeys.me(user!.id), (oldData: User) => {
-      return {
-        ...oldData,
-        avatarSrc
-      };
-    });
-  }, [queryClient, user]);
-
-  return changeAvatarSrc;
-};
-
-export const useIsTyping = (chatId: string) => {
+export const useIsTyping = (chatId: Conversation['id']) => {
   const [isTyping, setIsTyping] = useState<boolean>();
-  const typingTimeoutRef = useRef<number | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { socket } = useSocket();
+  const { messagesSocket: socket } = useSocket();
   const { data: user } = useUserMeQuery();
 
   useEffect(() => {
+    if(!socket) return;
+
     const handleTyping = ({ userId }: { userId: User['id'] }) => {
       if(userId !== user?.id) {
         setIsTyping(true);
@@ -228,26 +184,25 @@ export const useIsTyping = (chatId: string) => {
 
     };
 
-    socket?.on(`typing_${chatId}`, handleTyping);
+    const cleanup = enableSocketEventListeners(socket, [
+      {
+        eventName: `typing_${chatId}`,
+        eventCallback: handleTyping
+      }
+    ]);
 
-    return () => {
-      socket?.off(`typing_${chatId}`, handleTyping);
-    };
+    return cleanup;
 
   }, [chatId, socket, user?.id]);
 
   return isTyping;
 };
 
-export const useUserAvatar = (id: string) => {
-  const { data } = useGetUserPropQuery(id, 'avatarVersion');
+export const useChatWindowComponent = () => {
+  const NEW_MESSAGE_SCROLL_OFFSET = 150;
 
-  return data;
-};
-
-export const useChatWindow = () => {
-  const { socket } = useSocket();
-  const { id, pendingMessages, receiverId } = useChat();
+  const { messagesSocket: socket } = useSocket();
+  const { id, pendingMessages, receiver, chatWindowElement, showScrollButton } = useChat();
   const { data, isFetching } = useMessagesQuery(id);
   const { data: user } = useUserMeQuery();
 
@@ -255,102 +210,159 @@ export const useChatWindow = () => {
   const changeMessagesStatus = useMarkMessageAsRead();
   const addMessage = useAddMessageToList();
 
+  const prevChatIdRef = useRef<string>('');
+
   const messages = useMemo(() => {
-    return [...(data || []), ...Array.from(pendingMessages.values())];
-  }, [data, pendingMessages]);
+    const today = format(new Date(), 'dd.MM.yyyy');
+    const pendingArray = Array.from(pendingMessages.values());
 
-  const chatWindowRef = useRef<HTMLDivElement>(null);
-  
-  const renderMessages = useCallback(() => {
-    if (!messages.length) return null;
-    
-    const messagesComponents = [];
-
-    for (let i = 0; i < messages.length; i++) {
-      const message = messages[i];
-      if(i === messages.length - 1) {
-        messagesComponents.push(<Message renderAvatar={true} onRead={markMessageAsRead} messageData={message} key={message.id + message.status} />);
-      } else {
-        const senderId = messages[i].senderId;
-        const nextSenderId = messages[i + 1].senderId;
-        messagesComponents.push(<Message renderAvatar={senderId !== nextSenderId} onRead={markMessageAsRead} messageData={message} key={message.id + message.status} />);
-      }
+    if (!data || data.length === 0) {
+      return pendingArray.length > 0
+        ? [{ date: today, messages: pendingArray }]
+        : [];
+    }
+    if(!pendingArray.length) {
+      return data;
     }
 
-    return messagesComponents;
+    const todayGroup = data.find(group => group.date === today);
+
+    if (todayGroup) {
+      return data.map(group =>
+        group.date === today
+          ? { ...group, messages: [...group.messages, ...pendingArray] }
+          : group
+      );
+    } else {
+      return [
+        ...data,
+        { date: today, messages: pendingArray }
+      ];
+    }
+  }, [data, pendingMessages]);
+
+  const firstUnreadMessagesId = useMemo(() => {
+    for(const group of messages) {
+      const unreadMessage = group.messages.find((msg) => msg.status === 'delivered' && msg.senderId !== user?.id);
+
+      if(unreadMessage) {
+        return unreadMessage.id;
+      } else {
+        return null;
+      }
+    }
+  }, [messages, user?.id]);
+  
+  const messageGroups = useMemo(() => {
+    if (!messages.length) return null;
     
+    return messages.map((group, i) => (
+      <MessagesGroup
+        isLastGroup={i === messages.length - 1}
+        key={i}
+        date={group.date}
+        messages={group.messages}
+        onRead={markMessageAsRead}
+      />
+    )
+  );
   }, [markMessageAsRead, messages]);
 
+  const handleChatWindowScroll = useCallback(throttle(() => {
+    if(!chatWindowElement) return;
+    const windowOffsetHeight = chatWindowElement.offsetHeight;
+    const scrolledHeight = Math.floor(chatWindowElement.scrollHeight - chatWindowElement.scrollTop - windowOffsetHeight);
+    if(scrolledHeight > windowOffsetHeight && !showScrollButton) {
+      setShowScrollButton(true);
+    }
+  }, 500), [chatWindowElement, setShowScrollButton, showScrollButton]);
+
+  const handleOnScrollDownButton = useCallback(() => {
+    if(chatWindowElement) {
+      scrollChat(chatWindowElement, firstUnreadMessagesId ?? null, true);
+      setShowScrollButton(false);
+    }
+  }, [chatWindowElement, firstUnreadMessagesId]);
+
+  const scrollToFirstUnread = useCallback(() => {
+    if(chatWindowElement && id) {
+      prevChatIdRef.current = id;
+      scrollChat(chatWindowElement, firstUnreadMessagesId ?? null);
+    }
+  }, [chatWindowElement, firstUnreadMessagesId, id]);
+
   const handleNewMessage = useCallback(
-    async ({ message }: { message: Message }) => {
+    async ({ message, dateGroup }: { message: Message, dateGroup: string }) => {
         if(message.attachments?.length) {
           await preloadImages(message.attachments.map((attach) => attach.previewUrl));
         }
         if(message.senderId === user?.id) {
           deletePendingMessage(message.id);
         }
-        addMessage({ conversationId: id as string, message });
+        addMessage({ conversationId: id as string, message, dateGroup });
+
+        if(chatWindowElement) {
+          const windowOffsetHeight = chatWindowElement.offsetHeight;
+          const scrolledHeight = Math.floor(chatWindowElement.scrollHeight - chatWindowElement.scrollTop - windowOffsetHeight);
+          if(scrolledHeight < NEW_MESSAGE_SCROLL_OFFSET) {
+            scrollChat(chatWindowElement, message.id);
+          } else {
+            setShowScrollButton(true);
+          }
+        }
     },
-    [addMessage, id, user?.id]
+    [addMessage, chatWindowElement, id, user?.id]
   );
 
   const handleMessagesRead = useCallback(({ ids }: { ids: string[] }) => {
     changeMessagesStatus({ conversationId: id!, ids });
   }, [changeMessagesStatus, id]);
 
-  const handleNewConversation = useCallback(
-    async (data: { id: string }) => {
-      if(socket) {
-        socket.on(`new_message_${data.id}`, handleNewMessage);
-      }
-    }, 
-    [handleNewMessage, socket]
-  );
-
   const handleNewConversationOpened = useCallback((data: { id: string; }) => {
     setChatId(data.id);
   }, []);
 
   useEffect(() => {
-    if(socket) {
-      socket.on(`messages_read_${id}`, handleMessagesRead);
+    if(!socket) return;
 
-      return () => {
-        socket.off(`messages_read_${id}`, handleMessagesRead);
-      };
-    }
-  }, [handleMessagesRead, id, socket]);
+    const cleanup = enableSocketEventListeners(socket, [
+      {
+        eventName: id ? `new_message_${id}` : 'new_conversation_opened',
+        eventCallback: id ? handleNewMessage : handleNewConversationOpened
+      },
+      {
+        eventName: `messages_read_${id}`, 
+        eventCallback: handleMessagesRead
+      }
+    ]);
+
+    return cleanup;
+  }, [handleMessagesRead, handleNewConversationOpened, handleNewMessage, id, socket]);
 
   useEffect(() => {
-    if(socket) {
-      if(id) {
-        socket.on(`new_message_${id}`, handleNewMessage);
-      }
-      else {
-        socket.on('new_conversation_opened', handleNewConversationOpened);
-      }
-      socket.on('new_conversation', handleNewConversation);
-
-      return () => {
-        socket.off('new_conversation_opened', handleNewConversationOpened);
-        socket.off(`new_conversation`, handleNewConversation);
-        socket.off(`new_message_${id}`, handleNewMessage);
-      };
+    if (id && !isFetching && id !== prevChatIdRef.current) {
+      scrollToFirstUnread();
     }
-  }, [socket, handleNewConversation, handleNewMessage, id, handleNewConversationOpened]);
+  }, [id, isFetching, scrollToFirstUnread]);
 
   useEffect(() => {
-    if (chatWindowRef.current) {
-      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+    if(chatWindowElement) {
+      chatWindowElement.addEventListener('scroll', handleChatWindowScroll);
+
+      return () => {
+        chatWindowElement.removeEventListener('scroll', handleChatWindowScroll);
+      };
     }
-  }, [messages, chatWindowRef]);
+  }, [chatWindowElement, handleChatWindowScroll]);
 
   return {
-    renderMessages,
-    receiverId,
+    messageGroups,
+    receiver,
     isMessagesFetching: isFetching,
-    chatWindowRef,
-    id
+    chatWindowElement,
+    showScrollButton,
+    id,
+    handleOnScrollDownButton
   };
 };
 
@@ -360,9 +372,57 @@ export const useMessage = (messageData: Message | IPendingMessage) => {
   const { senderId, id, content: text, status, createdAt, attachments } = messageData;
 
   const isInitiatorMessage = senderId ===  user?.id;
-  const avatarVersion = useUserAvatar(senderId);
-  const avatarSrc = avatarVersion && cld.image(`avatars/${senderId}/thumbnail`).setVersion(avatarVersion).toURL();
   const date = format(createdAt, 'HH:mm');
 
-  return { id, text, status, attachments, isInitiatorMessage, avatarSrc, date };
-}
+  return { id, text, status, attachments, isInitiatorMessage, date };
+};
+
+export const useSendMessage = () => {
+  const { data: user } = useUserMeQuery();
+  const { messagesSocket: socket } = useSocket();
+  const { id, receiver, chatWindowElement } = useChat();
+  const sendMessageAttachments = useSendMessageAttachmentsMutation({});
+
+  const onSend = useCallback(async ({ message, attachments }: { message: string, attachments?: IClientMessageAttachments[] }) => {
+    const messageId = uuidv4();
+    const createdAt = new Date();
+
+    const newPendingMessage: IPendingMessage = {
+      id: messageId,
+      createdAt,
+      status: 'pending',
+      conversationId: id as string,
+      content: message,
+      senderId: user?.id as string,
+      receiverId: receiver?.id,
+      attachments
+    };
+    setPendingMessage(newPendingMessage);
+    setChatInput('');
+    if(chatWindowElement) {
+      scrollChat(chatWindowElement, messageId);
+    }
+
+    if(attachments) {
+      toggleAttachFileModal();
+
+      const formData = new FormData();
+      formData.append('messageId', messageId);
+      formData.append('conversationId', id!);
+      attachments.forEach((attachment) => {
+        formData.append('attachments', attachment.file);
+      });
+
+      const attachmentsLinks = await sendMessageAttachments.mutateAsync(formData);
+      const newMessage = {
+        ...newPendingMessage,
+        attachments: attachmentsLinks
+      };
+      socket?.emit('send_message', newMessage);
+    } 
+    else {
+      socket?.emit('send_message', newPendingMessage);
+    }
+  }, [chatWindowElement, id, receiver?.id, sendMessageAttachments, socket, user?.id]);
+  return onSend;
+};

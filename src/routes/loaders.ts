@@ -2,10 +2,9 @@ import axios from "axios";
 import { getMyInfo } from "../api/services/users";
 import { redirect } from "react-router-dom";
 import { io } from "socket.io-client";
-import { setUserId } from "../store/user";
-import { setSocket, setStatusSocket } from "../store/socket";
+import { setSocket, setStatusSocket, setUsersSocket } from "../store/socket";
 
-export const rootLoader = async () => {
+export const rootPageLoader = async () => {
   try {
     const userData = await getMyInfo();
     if (!userData || !userData.id) {
@@ -18,12 +17,13 @@ export const rootLoader = async () => {
       }
     });
     const statusSocket = io('http://localhost:3000/api/statuses');
-
-    setUserId(userData.id);
+    const usersSocket = io('http://localhost:3000/api/users');
+    
     setSocket(socket);
     setStatusSocket(statusSocket);
+    setUsersSocket(usersSocket);
 
-    return { userData, socket, statusSocket };
+    return null;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 401) {
@@ -33,4 +33,12 @@ export const rootLoader = async () => {
 
     return { error };
   }
+};
+
+export const authPageLoader = async () => {
+  const userData = await getMyInfo();
+  if (userData) {
+    return redirect('/');
+  }
+  return null;
 };

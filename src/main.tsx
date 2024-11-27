@@ -14,7 +14,7 @@ import QueryClientProvider from './api/queries/QueryClientProvider.tsx';
 import './index.css';
 import { RootPage, ErrorPage, LoginPage, RegistrationPage } from './routes/index.tsx';
 import { ThemeProvider } from './theme/theme.tsx';
-import { rootLoader } from './routes/loaders.ts';
+import { authPageLoader, rootPageLoader } from './routes/loaders.ts';
 
 
 const router = createBrowserRouter([
@@ -22,15 +22,17 @@ const router = createBrowserRouter([
     path: "/",
     element: <RootPage />,
     errorElement: <ErrorPage />,
-    loader: rootLoader
+    loader: rootPageLoader
   },
   {
     path: '/login',
     element: <LoginPage />,
+    loader: authPageLoader
   },
   {
     path: '/registration',
     element: <RegistrationPage />,
+    loader: authPageLoader
   }
 ]);
 

@@ -1,12 +1,15 @@
-import { Box, Container, IconButton, Modal } from "@mui/material";
+import { Box, CircularProgress, Container, IconButton, Modal } from "@mui/material";
 import { setImageModalSrc, toggleImageModal, useModals } from "../../store/modals";
 import CloseIcon from '@mui/icons-material/Close';
 import { useColors, useTransitions } from "../../theme/hooks";
+import { useEffect, useState } from "react";
 
 
 const ImageModal = () => {
   const transitions = useTransitions();
   const colors = useColors();
+
+  const [isLoading, setIsLoading] = useState<boolean>();
 
   const { isOpened, imageSrc } = useModals((state) => state.imageModal);
 
@@ -14,6 +17,21 @@ const ImageModal = () => {
     toggleImageModal();
     setImageModalSrc('');
   };
+
+  useEffect(() => {
+    if(imageSrc.trim() === '') return;
+
+    const img = new Image();
+    img.src = imageSrc;
+    if(img.complete && img.naturalWidth > 0) {
+      return;
+    }
+    setIsLoading(true);
+
+    img.onload = () => {
+      setIsLoading(false);
+    };
+  }, [imageSrc]);
 
   return (
     <Modal
@@ -46,7 +64,6 @@ const ImageModal = () => {
           width: 'auto',
           maxWidth: '80vw',
           maxHeight: '80vh',
-          minWidth: '30vw',
           backgroundColor: 'white',
 
         }}
@@ -85,14 +102,34 @@ const ImageModal = () => {
             />
           </IconButton>
         </Box>
-        <img 
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain'
+        <Box
+          sx={{
+            width: '800px',
+            height: 'auto',
+
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+
+            backgroundColor: 'black'
           }}
-          src={imageSrc}
-        />
+        >
+          {
+            isLoading ? (
+              <CircularProgress />
+            ) : (
+              <img 
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain'
+                }}
+                src={imageSrc}
+              />
+            )
+          }
+        </Box>
+        
       </Container>
     </Modal>
   );

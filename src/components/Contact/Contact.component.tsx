@@ -1,29 +1,29 @@
-import { Avatar, Badge, Box, Typography } from "@mui/material";
-import { useColors } from "../../../theme/hooks";
-import { setChatId, setReceiverId, setReceiverName } from "../../../store/chat";
-import { closeAllModals } from "../../../store/modals";
-import { useStatus } from "../../../utils/hooks";
+import { Badge, Box, Typography } from "@mui/material";
+
+import { useColors } from "@/theme/hooks";
+import { setChatId, setReceiver } from "@/store/chat";
+import { closeAllModals } from "@/store/modals";
+import { useStatus } from "@/utils/hooks";
+import UserAvatarComponent from "../UserAvatar/UserAvatar.component";
 
 interface IContactComponentProps {
-  login: User['login'];
+  contactUser: User;
   conversationId: Contact['conversationId'];
-  id: User['id']
 }
 
-const ContactComponent = ({ login, conversationId, id }: IContactComponentProps) => {
-  const colors = useColors();
+const ContactComponent = ({ conversationId, contactUser }: IContactComponentProps) => {
+  const { id: contactId, login } = contactUser;
 
-  const status = useStatus(id);
+  const colors = useColors();
+  const status = useStatus(contactId);
 
   if(status === '') return;
   
   return (
     <Box 
       onClick={() => {
-        console.log(id);
         setChatId(conversationId ?? undefined);
-        setReceiverName(login);
-        setReceiverId(id);
+        setReceiver(contactUser);
         closeAllModals();
       }}
       sx={{
@@ -54,7 +54,7 @@ const ContactComponent = ({ login, conversationId, id }: IContactComponentProps)
         overlap="circular"
         variant="dot"
       >
-        <Avatar src="https://static.vecteezy.com/system/resources/thumbnails/036/280/651/small_2x/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-illustration-vector.jpg" />
+        <UserAvatarComponent id={contactId} />
       </Badge>
       <Box
         sx={{
@@ -65,7 +65,7 @@ const ContactComponent = ({ login, conversationId, id }: IContactComponentProps)
         }}
       >
         <Typography variant="subtitle2">{login}</Typography>
-        <Typography variant="subtitle1">last seen recently</Typography>
+        <Typography variant="subtitle1">{status}</Typography>
       </Box>
     </Box>
   );

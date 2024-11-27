@@ -2,14 +2,23 @@ import { create } from "zustand";
 import type { Socket } from "socket.io-client";
 
 interface ISocketStore {
-  socket: Socket | undefined;
+  messagesSocket: Socket | undefined;
   statusSocket: Socket | undefined;
+  usersSocket: Socket | undefined;
 }
 
 export const useSocket = create<ISocketStore>(() => ({
-  socket: undefined,
-  statusSocket: undefined
+  messagesSocket: undefined,
+  statusSocket: undefined,
+  usersSocket: undefined
 }));
+
+export const setUsersSocket = (socket: Socket) => {
+  useSocket.setState((state) => ({
+    ...state,
+    usersSocket: socket
+  }));
+};
 
 export const setStatusSocket = (socket: Socket) => {
   useSocket.setState((state) => ({ 
@@ -19,5 +28,8 @@ export const setStatusSocket = (socket: Socket) => {
 };
 
 export const setSocket = (socket: Socket) => {
-  useSocket.setState(() => ({ socket }));
+  useSocket.setState((state) => ({ 
+    ...state,
+    messagesSocket: socket
+   }));
 };

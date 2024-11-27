@@ -1,8 +1,10 @@
+import type { MessagesApiResponse } from '@/types';
 import api from '../client';
 
 export const getMessages = async (id: Conversation['id'] | undefined) => {
   if(!id) return null;
-  const { data } = await api.get<Message[]>(`/messages/${id}`, { withCredentials: true });
+  const { data } = await api.get<MessagesApiResponse>(`/messages/${id}`, { withCredentials: true });
+  console.log(typeof data[0].date);
   
   return data;
 };
@@ -20,11 +22,11 @@ export const getLastMessage = async (id: Conversation['id']) => {
 };
 
 export const sendMessageAttachments = async (formData: FormData) => {
-  const { data } = await api.post('/messages/attachments', formData, {
+  const { data } = await api.post<NonNullable<Message['attachments']>>('/messages/attachments', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   });
 
-  return data as Promise<any>;
+  return data;
 };

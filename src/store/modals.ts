@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { IClientMessageAttachments } from "../types";
 
 interface IModals {
   contactsModal: boolean;
@@ -7,7 +8,7 @@ interface IModals {
   attachFileModal: {
     isOpened: boolean;
     fileInputRef: React.RefObject<HTMLInputElement> | null;
-    attachments: any[];
+    attachments: IClientMessageAttachments[];
   };
   imageModal: {
     isOpened: boolean;
@@ -51,7 +52,7 @@ export const toggleAddContactModal = () => {
   }));
 };
 
-export const toggleAttchFileModal = () => {
+export const toggleAttachFileModal = () => {
   useModals.setState((state) => {
     if(state.attachFileModal.fileInputRef?.current) {
       state.attachFileModal.fileInputRef.current.value = '';
@@ -91,13 +92,13 @@ export const setImageModalSrc = (src: string) => {
   });
 };
 
-export const setAttachments = (attachments: any[]) => {
+export const setAttachments = (attachments: IClientMessageAttachments[]) => {
   useModals.setState((state) => ({
     ...state,
     attachFileModal: {
       ...state.attachFileModal,
       attachments: [
-        ...state.attachFileModal.attachments,
+        ...state.attachFileModal.attachments!,
         ...attachments
       ]
     }
@@ -128,10 +129,20 @@ export const setFileInputRef = (ref: React.RefObject<HTMLInputElement>) => {
 
 export const closeAllModals = () => {
   useModals.setState((state) => {
-    const newState = {} as {[key: string]: boolean};
-    Object.keys(state).forEach((key) => {
-      newState[key] = false;
-    });
-    return newState; 
+    const updatedState = Object.entries(state).reduce((acc, [key, value]) => {
+      const modalKey = key as keyof IModals;
+
+      if (typeof value === 'boolean') {
+        value = false;
+        acc[modalKey] = value;
+      } else if (typeof value === 'object' && value !== null && 'isOpened' in value) {
+        acc[modalKey] = { ...value, isOpened: false };
+      } else {
+        acc[modalKey] = value;
+      }
+      return acc;
+    }, {} as IModals);
+
+    return updatedState;
   });
 };

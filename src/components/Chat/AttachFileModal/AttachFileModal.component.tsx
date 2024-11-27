@@ -1,63 +1,20 @@
-import { Box, Button, ButtonBase, Container, Modal, TextField, Typography } from "@mui/material";
-import { toggleAttchFileModal, useModals } from "../../../store/modals";
-import { v4 as uuidv4 } from 'uuid';
-import { useSendMessageAttachmentsMutation } from "../../../api/hooks/messages";
-import { useChat } from "../../../store";
-import { useUserMeQuery } from "../../../api/hooks/users";
-import { useSocket } from "../../../store/socket";
-import { setChatInput, setPendingMessage, useChatInput } from "../../../store/chat";
-import { IPendingMessage } from "../../../types";
 import { useEffect, useRef } from "react";
-import { buildGridForAttachmentsModal } from "../../../utils";
-import AttachFileItem from "./AttachFileList/AttachFileItem/AttachFileItem.component";
-import UploadIcon from '@mui/icons-material/Upload';
-import { useColors, useTransitions } from "../../../theme/hooks";
+import { Box, Button, Container, Modal, TextField, Typography } from "@mui/material";
+
+import { toggleAttachFileModal, useModals } from "../../../store/modals";
+import { setChatInput, useChatInput } from "../../../store/chat";
+import { useSendMessage } from "../../../utils/hooks";
+import AttachFileList from "./AttachFileList.component";
 
 const AttachFileModal = () => {
-  const colors = useColors();
-  const transitions = useTransitions();
 
-  const { id: conversationId, receiverId } = useChat();
   const chatInput = useChatInput();
-  const { socket } = useSocket();
-  const { data: user } = useUserMeQuery();
-  const { isOpened, attachments, fileInputRef } = useModals(state => state.attachFileModal);
-  const sendMessageAttachments = useSendMessageAttachmentsMutation({});
+  const { isOpened, attachments } = useModals(state => state.attachFileModal);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const onSend = async () => {
-    const messageId = uuidv4();
-    const createdAt = new Date();
-
-    const newPendingMessage: IPendingMessage = {
-      id: messageId,
-      createdAt,
-      status: 'pending',
-      conversationId: conversationId as string,
-      content: chatInput,
-      senderId: user?.id as string,
-      receiverId: receiverId as string,
-      attachments
-    };
-    setPendingMessage(newPendingMessage);
-    setChatInput('');
-    toggleAttchFileModal();
-
-    const formData = new FormData();
-    formData.append('messageId', messageId);
-    formData.append('conversationId', conversationId!);
-    attachments.forEach((attachment) => {
-      formData.append('attachments', attachment.file);
-    });
-
-    const attachmentsLinks = await sendMessageAttachments.mutateAsync(formData);
-
-    const newMessage = {
-      ...newPendingMessage,
-      attachments: attachmentsLinks
-    };
-
-    socket?.emit('send_message', newMessage);
+  const onSend = useSendMessage();
+  
+  const handleSendMessage = () => {
+    onSend({ message: chatInput, attachments });
   };
 
   useEffect(() => {
@@ -74,7 +31,7 @@ const AttachFileModal = () => {
       slotProps={{
         backdrop: {
           onClick: () => {
-            toggleAttchFileModal();
+            toggleAttachFileModal();
           }
         }
       }}
@@ -106,54 +63,7 @@ const AttachFileModal = () => {
           }}
         >
           <Typography variant='h5'>Отправить файл</Typography>
-          {
-            attachments.length ? (
-              <Box 
-                sx={{
-                  ...buildGridForAttachmentsModal(attachments.length)
-                }}
-              >
-                {
-                  attachments.map((attach) => (
-                    <AttachFileItem key={attach.id} attachment={attach} />
-                  ))
-                }
-              </Box>
-            ) : (
-              <ButtonBase
-                onClick={() => {
-                  fileInputRef?.current?.click();
-                }}
-                sx={{
-                  width: '100%',
-                  height: '150px',
-                  backgroundColor: colors['ghost-light'],
-                  color: colors['ghost-dark'],
-
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  rowGap: 1,
-                  transition: `background-color ${transitions['standard']}, color ${transitions['standard']}`,
-
-
-                  '&:hover': {
-                    backgroundColor: colors['ghost-dark'],
-                    color: 'white'
-                  }
-                }}
-                component="div"
-              >
-                <UploadIcon 
-                  sx={{
-                    color: 'inherit'
-                  }}
-                />
-                Загрузить изображения
-              </ButtonBase>
-            )
-          }
+          <AttachFileList />
 
           <TextField
             inputRef={inputRef}
@@ -169,10 +79,10 @@ const AttachFileModal = () => {
               justifyContent: 'space-between'
             }}
           >
-            <Button onClick={toggleAttchFileModal} variant="text">
+            <Button onClick={toggleAttachFileModal} variant="text">
               Отмена
             </Button>
-            <Button onClick={onSend} variant="text">
+            <Button onClick={handleSendMessage} variant="text">
               Отправить
             </Button>
           </Box>

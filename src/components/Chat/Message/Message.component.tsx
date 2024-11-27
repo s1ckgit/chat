@@ -1,29 +1,34 @@
-import styles from './Message.module.css';
 import { useColors, useTypography } from '../../../theme/hooks';
-import MessageStatus from './MessageStatus/MessageStatus.component';
+import MessageStatus from '../../MessageStatus/MessageStatus.component';
 import { useEffect } from 'react';
 import { useInView } from "react-intersection-observer";
-import { Avatar, Box, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useMessage } from '../../../utils/hooks';
 import type { IPendingMessage } from '../../../types';
-import MessageAttachment from './MessageAttachment/MessageAttachment.component';
+import MessageAttachment from './MessageAttachment.component';
 import { buildGridForAttachments } from '../../../utils';
-// import { buildGridForAttachments } from '../../../utils';
+import { setShowScrollButton } from '@/store/chat';
+import UserAvatarComponent from '@/components/UserAvatar/UserAvatar.component';
 
 interface IMessageProps {
   messageData: Message | IPendingMessage;
   renderAvatar: boolean;
+  isLastMessage?: boolean;
   onRead: (messageId: string) => void;
 }
 
-const Message = ({ messageData, renderAvatar, onRead }: IMessageProps) => {
-  const { id, text, status, avatarSrc, isInitiatorMessage, date, attachments } = useMessage(messageData);
+const Message = ({ messageData, renderAvatar, isLastMessage, onRead }: IMessageProps) => {
+  const { id, text, status, isInitiatorMessage, date, attachments } = useMessage(messageData);
   const noText = text.length < 1;
 
   const colors = useColors();
   const typography = useTypography();
 
-  const { ref, inView } = useInView();
+  const { ref, inView } = useInView({
+    threshold: 0,
+    delay: 0,
+    triggerOnce: !isLastMessage
+  });
 
   useEffect(() => {
     if (inView && !isInitiatorMessage && status !== 'read') {
@@ -31,17 +36,29 @@ const Message = ({ messageData, renderAvatar, onRead }: IMessageProps) => {
     }
   }, [id, inView, isInitiatorMessage, onRead, status]);
 
+  useEffect(() => {
+    if (!isLastMessage) return;
+
+    if(inView) {
+      setShowScrollButton(false);
+    }
+
+  }, [inView, isLastMessage]);
+
   return (
     <Box
+      component='div'
+      data-message-id={messageData.id}
       sx={{
         display: 'flex',
         columnGap: '6px',
         alignItems: 'flex-end',
-        position: 'relative'
+        position: 'relative',
+        gridColumn: '1'
       }}
       ref={ref} 
     >
-      { renderAvatar ? <Avatar src={avatarSrc} /> : <Box sx={{ width: 40, height: 40 }} /> }
+      { renderAvatar ? <UserAvatarComponent id={messageData.senderId} /> : <Box sx={{ width: 40, height: 40 }} /> }
       {
         renderAvatar && !noText && (
           <Box

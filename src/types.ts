@@ -14,6 +14,28 @@ export interface ICreateUserData {
   password: string;
 }
 
-export interface IPendingMessage extends Omit<Message, 'sender' | 'conversation' | 'lastConversation'> {
-  receiverId: string;
+export interface IPendingMessage extends Omit<Message, 'sender' | 'conversation' | 'lastConversation' | 'createdAt'> {
+  createdAt: Date;
+  receiverId?: string;
+}
+
+export interface IMessagesDateGroupApiResponse {
+  date: string;
+  messages: Message[]
+}
+
+export type MessagesApiResponse = IMessagesDateGroupApiResponse[];
+
+export interface IApiResponse {
+  message: string;
+}
+
+export interface MessageAttachments {
+  originalUrl: string;
+  previewUrl: string;
+}
+
+export interface IClientMessageAttachments extends MessageAttachments {
+  id: number;
+  file: File;
 }

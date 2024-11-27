@@ -1,26 +1,32 @@
-import { Box, IconButton, Input } from "@mui/material";
 import { ChangeEvent, useCallback, useEffect, useRef } from "react";
+import throttle from 'lodash.throttle';
+
+import { Box, IconButton, Input } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+
 import { useColors } from "../../../theme/hooks";
-import { useChat } from "../../../store";
-import { setChatInput, setPendingMessage, useChatInput } from "../../../store/chat";
-import { v4 as uuidv4 } from 'uuid';
-import throttle from 'lodash.throttle';
+import { useChat } from "@/store/chat";
+import { setChatInput, useChatInput } from "../../../store/chat";
 import { useUserMeQuery } from "../../../api/hooks/users";
 import { useSocket } from "../../../store/socket";
-import { IPendingMessage } from "../../../types";
-import { setAttachments, setFileInputRef, toggleAttchFileModal, useModals } from "../../../store/modals";
+import { setAttachments, setFileInputRef, toggleAttachFileModal, useModals } from "../../../store/modals";
+import { useSendMessage } from "../../../utils/hooks";
 
 const ChatInput = () => {
   const colors = useColors();
   const { isOpened } = useModals(state => state.attachFileModal);
 
-  const { socket } = useSocket();
+  const { messagesSocket: socket } = useSocket();
   const { data: user } = useUserMeQuery();
-  const { id, receiverId } = useChat();
+  const { id } = useChat();
+  const onSend = useSendMessage();
   const chatInput = useChatInput();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSendMessage = () => {
+    onSend({ message: chatInput });
+  };
 
   const emitTyping = useCallback(() => {
     if (socket) {
@@ -39,29 +45,6 @@ const ChatInput = () => {
     throttledTyping();
   };
 
-  const onSendMessage = () => {
-    if(socket) {
-      const messageId = uuidv4();
-      const createdAt = new Date();
-
-      const newMessage: IPendingMessage = {
-        id: messageId,
-        createdAt,
-        status: 'pending',
-        conversationId: id as string,
-        content: chatInput,
-        senderId: user?.id as string,
-        receiverId: receiverId as string
-      };
-
-      setPendingMessage(newMessage);
-
-      socket.emit('send_message', newMessage);
-    }
-
-    setChatInput('');
-  };
-
   const onImageLoad = (e: ChangeEvent<HTMLInputElement>) => {
     if(e.target.files?.length) {
       const files = Array.from(e.target.files).slice(0, 9);
@@ -73,7 +56,7 @@ const ChatInput = () => {
       }));
       setAttachments(attachments);
       if(!isOpened) {
-        toggleAttchFileModal();
+        toggleAttachFileModal();
       }
     };
   };
@@ -103,7 +86,7 @@ const ChatInput = () => {
         <AttachFileIcon sx={{ fontSize: 40 }} color={'primary'} />
       </IconButton>
       <Input value={chatInput} onChange={onTyping} disableUnderline placeholder='Сюда хуйню свою высирай' />
-      <IconButton onClick={onSendMessage}>
+      <IconButton onClick={handleSendMessage}>
         <SendIcon sx={{ fontSize: 40 }} color={'primary'} />
       </IconButton>
     </Box>

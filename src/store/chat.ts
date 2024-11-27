@@ -4,38 +4,27 @@ import { IPendingMessage } from '../types';
 
 interface IChat {
   id?: string;
-  receiverId?: string;
-  receiverName?: string;
+  receiver?: User;
   pendingMessages: Map<string, IPendingMessage>;
+  chatWindowElement: HTMLDivElement | null;
+  showScrollButton: boolean;
 }
 
 
 export const useChat = create<IChat>(() => ({
   id: undefined,
-  receiverId: undefined,
-  receiverName: undefined,
-  pendingMessages: new Map()
+  receiver: undefined,
+  pendingMessages: new Map(),
+  chatWindowElement: null,
+  showScrollButton: false
 }));
-
-export const useChatInput = create<string>(() => (''));
-
-export const setChatInput = (string: string) => {
-  useChatInput.setState(() => (string));
-};
 
 export const setChatId = (id: string | undefined) => {
   useChat.setState((state) => ({ ...state, id }));
 };
 
-export const setReceiverId = (id: string) => {
-  useChat.setState((state) => ({ ...state, receiverId: id }));
-};
-
-export const setReceiverName = (name: string) => {
-  useChat.setState((state) => ({
-    ...state,
-    receiverName: name
-  }));
+export const setReceiver = (receiver: User) => {
+  useChat.setState((state) => ({ ...state, receiver }));
 };
 
 export const setPendingMessage = (message: IPendingMessage) => {
@@ -66,9 +55,22 @@ export const deletePendingMessage = (id: string | string[]) => {
   });
 };
 
-export const setIsTyping = (bool: boolean) => {
+export const setChatWindowElement = (element: HTMLDivElement) => {
   useChat.setState((state) => ({
     ...state,
-    isTyping: bool
+    chatWindowElement: element
   }));
+};
+
+export const setShowScrollButton = (boolean: boolean) => {
+  useChat.setState((state) => ({
+    ...state,
+    showScrollButton: boolean
+  }));
+};
+
+export const useChatInput = create<string>(() => (''));
+
+export const setChatInput = (string: string) => {
+  useChatInput.setState(() => (string));
 };
