@@ -71,6 +71,8 @@ export const setShowScrollButton = (boolean: boolean) => {
 
 export const useChatInput = create<string>(() => (''));
 
-export const setChatInput = (string: string) => {
-  useChatInput.setState(() => (string));
+export const setChatInput = (update: ((prev: string) => string) | string) => {
+  useChatInput.setState((state) => {
+    return typeof update === 'function' ? update(state) : update;
+  });
 };

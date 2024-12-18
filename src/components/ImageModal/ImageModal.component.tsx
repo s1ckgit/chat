@@ -105,7 +105,7 @@ const ImageModal = () => {
         <Box
           sx={{
             width: '800px',
-            height: 'auto',
+            height: '600px',
 
             display: 'flex',
             justifyContent: 'center',
@@ -120,8 +120,6 @@ const ImageModal = () => {
             ) : (
               <img 
                 style={{
-                  width: '100%',
-                  height: '100%',
                   objectFit: 'contain'
                 }}
                 src={imageSrc}

@@ -1,9 +1,12 @@
-import { ChangeEvent, useCallback, useEffect, useRef } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import throttle from 'lodash.throttle';
 
 import { Box, IconButton, Input } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 import { useColors } from "../../../theme/hooks";
 import { useChat } from "@/store/chat";
@@ -11,11 +14,12 @@ import { setChatInput, useChatInput } from "../../../store/chat";
 import { useUserMeQuery } from "../../../api/hooks/users";
 import { useSocket } from "../../../store/socket";
 import { setAttachments, setFileInputRef, toggleAttachFileModal, useModals } from "../../../store/modals";
-import { useSendMessage } from "../../../utils/hooks";
+import { useSendMessage } from "@/hooks/helpers";
 
 const ChatInput = () => {
   const colors = useColors();
   const { isOpened } = useModals(state => state.attachFileModal);
+  const [isEmojiPickerOpened, setIsEmojiPickerOpened] = useState<boolean>(false);
 
   const { messagesSocket: socket } = useSocket();
   const { data: user } = useUserMeQuery();
@@ -61,6 +65,14 @@ const ChatInput = () => {
     };
   };
 
+  const handleToggleEmojiPicker = () => {
+    setIsEmojiPickerOpened(prev => !prev);
+  };
+
+  const handleEmojiSelect = (emoji: { native: string }) => {
+    setChatInput(prev => prev + emoji.native);
+  };
+
   useEffect(() => {
     if(fileInputRef.current) {
       setFileInputRef(fileInputRef);
@@ -70,25 +82,80 @@ const ChatInput = () => {
   return (
     <Box 
       sx={{
+        position: 'relative',
         padding: '10px',
         borderTop: '1px solid',
         borderColor: colors['ghost-light'],
     
         display: 'grid',
-        gridTemplateColumns: '56px 1fr 56px',
+        gridTemplateColumns: '56px auto 56px 56px',
         columnGap: '10px'
       }}
     >
-      <IconButton 
+      <IconButton
+        sx={{
+          width: '56px'
+        }}
+
         component='label'
       >
         <input ref={fileInputRef} onChange={onImageLoad} hidden type="file" multiple accept=".png, .jpg, .jpeg"/>
         <AttachFileIcon sx={{ fontSize: 40 }} color={'primary'} />
       </IconButton>
-      <Input value={chatInput} onChange={onTyping} disableUnderline placeholder='Сюда хуйню свою высирай' />
-      <IconButton onClick={handleSendMessage}>
+
+      {
+        isEmojiPickerOpened && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '-450px',
+              right: '56px',
+              zIndex: 10,
+            }}
+          >
+            <Picker 
+              data={data} 
+              onEmojiSelect={handleEmojiSelect} 
+              locale='ru'
+              skinTonePosition='none'
+              previewPosition='none'
+              perLine='9'
+              maxFrequentRows={1}
+            />
+          </Box>
+        )
+      }
+
+
+      <Input 
+        sx={{
+          width: '100%'
+        }}
+        value={chatInput} 
+        onChange={onTyping} 
+        disableUnderline 
+        placeholder='Сюда хуйню свою высирай' 
+      />
+
+      <IconButton
+        sx={{
+          width: '56px'
+        }}
+        onClick={handleToggleEmojiPicker}
+      >
+        <SentimentSatisfiedAltIcon sx={{ fontSize: 40 }} color={'primary'} />
+      </IconButton>
+
+      <IconButton
+        sx={{
+          width: '56px'
+        }}
+
+        onClick={handleSendMessage}
+      >
         <SendIcon sx={{ fontSize: 40 }} color={'primary'} />
       </IconButton>
+
     </Box>
     
   );

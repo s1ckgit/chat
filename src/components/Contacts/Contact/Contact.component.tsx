@@ -1,20 +1,24 @@
 import { Badge, Box, Typography } from "@mui/material";
 
-import { useColors } from "@/theme/hooks";
+import { useColors, useTypography } from "@/theme/hooks";
 import { setChatId, setReceiver } from "@/store/chat";
 import { closeAllModals } from "@/store/modals";
-import { useStatus } from "@/utils/hooks";
-import UserAvatarComponent from "../UserAvatar/UserAvatar.component";
+import { useStatus } from "@/hooks/helpers";
+import UserAvatarComponent from "../../UserAvatar/UserAvatar.component";
+import HighlightText from "@/components/HighlightText/HighlightText.component";
 
 interface IContactComponentProps {
-  contactUser: User;
-  conversationId: Contact['conversationId'];
+  contactData: Contact;
+  searchValue?: string;
 }
 
-const ContactComponent = ({ conversationId, contactUser }: IContactComponentProps) => {
-  const { id: contactId, login } = contactUser;
+const ContactComponent = ({ contactData, searchValue }: IContactComponentProps) => {
+  const { id: contactId, login } = contactData.contact;
+  const { conversationId } = contactData;
+  const contactUser = contactData.contact;
 
   const colors = useColors();
+  const typography = useTypography();
   const status = useStatus(contactId);
 
   if(status === '') return;
@@ -48,7 +52,7 @@ const ContactComponent = ({ conversationId, contactUser }: IContactComponentProp
           },
         }}
         invisible={
-          status == 'offline'
+          status !== 'online'
         }
         color="primary"
         overlap="circular"
@@ -64,7 +68,13 @@ const ContactComponent = ({ conversationId, contactUser }: IContactComponentProp
           justifyContent: 'space-between'
         }}
       >
-        <Typography variant="subtitle2">{login}</Typography>
+        <HighlightText 
+          sx={{
+            ...typography['name']
+          }}
+          text={login} 
+          highlight={searchValue || ''} 
+        />
         <Typography variant="subtitle1">{status}</Typography>
       </Box>
     </Box>

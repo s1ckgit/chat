@@ -10,6 +10,8 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import QueryClientProvider from './api/queries/QueryClientProvider.tsx';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Toaster } from 'sonner';
 
 import './index.css';
 import { RootPage, ErrorPage, LoginPage, RegistrationPage } from './routes/index.tsx';
@@ -40,7 +42,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
       <QueryClientProvider>
-        <RouterProvider router={router} />
+        <GoogleOAuthProvider clientId='116876690810-sh86eih42n8ng54afv9aq7mjgvbv0pqs.apps.googleusercontent.com'>
+          <Toaster />
+          <RouterProvider router={router} />
+        </GoogleOAuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,

@@ -39,3 +39,11 @@ export interface IClientMessageAttachments extends MessageAttachments {
   id: number;
   file: File;
 }
+
+export interface ITelegramProfileData {
+  id: number;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  photo_url?: string;
+}

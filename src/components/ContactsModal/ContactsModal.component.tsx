@@ -1,31 +1,15 @@
-import { Box, Button, CircularProgress, Container, Divider, InputAdornment, Modal, TextField, Typography } from "@mui/material";
-import { toggleAddContactModal, toggleContactsModal, useModals } from "@/store/modals";
+import { Box, Button, Container, Divider, InputAdornment, Modal, TextField, Typography } from "@mui/material";
+import { closeAddContactModal, openAddContactModal, toggleContactsModal, useModals } from "@/store/modals";
 import SearchIcon from '@mui/icons-material/Search';
-import { useContactsQuery } from "@/api/hooks/users";
-import Contact from "@/components/Contact/Contact.component";
 import AddContactsModal from "../AddContactsModal/AddContactsModal.component";
-import { useCallback, useEffect } from "react";
-import { useSocket } from "@/store/socket";
+import { useState } from "react";
+import Contacts from "../Contacts/Contacts.component";
 
 const ContactsModal = () => {
   const isOpened = useModals(state => state.contactsModal);
   const isAddOpened = useModals(state => state.addContactModal);
-  const { data, isFetching, refetch } = useContactsQuery();
-  const { messagesSocket: socket } = useSocket();
 
-  const handleNewConversation = useCallback(() => {
-    refetch();
-  }, [refetch]);
-
-  useEffect(() => {
-    if(socket) {
-      socket.on('new_conversation', handleNewConversation);
-
-      return () => {
-        socket.off('new_conversation', handleNewConversation);
-      };
-    }
-  }, [socket, handleNewConversation]);
+  const [searchValue, setSearchValue] = useState('');
 
   return (
       <Modal
@@ -34,7 +18,7 @@ const ContactsModal = () => {
           backdrop: {
             onClick: () => {
               toggleContactsModal();
-              toggleAddContactModal();
+              closeAddContactModal();
             }
           }
         }}
@@ -64,6 +48,8 @@ const ContactsModal = () => {
               <Box>
                 <Typography sx={{ padding: '24px 0px 24px 24px' }} variant='h5'>Контакты</Typography>
                 <TextField
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
                   sx={{
                     paddingLeft: '24px',
                     paddingBottom: '8px'
@@ -89,22 +75,7 @@ const ContactsModal = () => {
                   overflowY: 'scroll'
                 }}
               >
-                {
-                  isFetching ? (
-                    <Box 
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <CircularProgress />
-                    </Box>
-                  ) : data && (
-                    data.map((contact) => <Contact key={contact.id} conversationId={contact.conversationId} contactUser={contact.contact} />)
-                  )
-                }
+                <Contacts searchValue={searchValue} />
               </Box>
               <Divider />
               <Box
@@ -114,7 +85,7 @@ const ContactsModal = () => {
                   justifyContent: 'space-between'
                 }}
               >
-              <Button onClick={toggleAddContactModal} variant="text">Добавить контакт</Button>
+              <Button onClick={openAddContactModal} variant="text">Добавить контакт</Button>
               <Button onClick={toggleContactsModal} variant="text">Закрыть</Button>
               </Box>
             </Container>

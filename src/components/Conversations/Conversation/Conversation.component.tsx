@@ -2,19 +2,23 @@ import { useCallback, useEffect } from 'react';
 import { setChatId, setReceiver } from '../../../store/chat';
 import { useColors, useTransitions, useTypography } from '../../../theme/hooks';
 
-import { Badge, Box, Typography } from '@mui/material';
-import { useStatus, useUpdateLastMessage } from '../../../utils/hooks';
-import { useSocket } from '../../../store/socket';
+import { Badge, Box } from '@mui/material';
+
+import { useSocket } from '@/store/socket';
+import { useStatus } from '@/hooks/helpers';
+import { useUpdateLastMessage } from '@/hooks/cache-handlers';
 
 import ConversationLastMessage from './ConversationLastMessage.component';
 import { enableSocketEventListeners } from '../../../utils';
 import UserAvatarComponent from '@/components/UserAvatar/UserAvatar.component';
+import HighlightText from '@/components/HighlightText/HighlightText.component';
 
 interface IConversationProps {
   conversation: Conversation;
+  searchValue?: string;
 }
 
-const Conversation = ({ conversation }: IConversationProps) => {
+const Conversation = ({ conversation, searchValue }: IConversationProps) => {
   const { id } = conversation;
   const lastMessage = conversation.lastMessage ?? undefined;
   const receiver = conversation.participants[0];
@@ -120,12 +124,13 @@ const Conversation = ({ conversation }: IConversationProps) => {
           gridTemplateRows: '1fr 1fr',
         }}
       >
-        <Typography 
-          component='p' 
-          sx={{ ...typography.name }} 
-        >
-          {receiver.login}
-        </Typography>
+        <HighlightText 
+            sx={{
+              ...typography['name']
+            }}
+            text={receiver.login} 
+            highlight={searchValue || ''} 
+          />
         {
           lastMessage ? (
             <ConversationLastMessage message={lastMessage} />

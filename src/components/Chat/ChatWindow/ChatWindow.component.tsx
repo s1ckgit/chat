@@ -1,11 +1,12 @@
 import { Box, Button, CircularProgress } from "@mui/material";
 import { useContactsQuery } from "../../../api/hooks/users";
 import { toggleContactsModal } from "../../../store/modals";
-import { useChatWindowComponent } from "../../../utils/hooks";
-import { useEffect, useRef } from "react";
+import { useChatWindowComponent } from "@/hooks/components";
 import { setChatWindowElement } from "@/store/chat";
 
 import ScrollButtonComponent from "./ScrollButton.component";
+import { useConversationsQuery } from "@/api/hooks/messages";
+import { useCallback } from "react";
 
 const ChatWindow = () => {
   const { 
@@ -14,17 +15,17 @@ const ChatWindow = () => {
     receiver, 
     isMessagesFetching,
     showScrollButton,
-    id 
+    id,
+    chatWindowElement
   } = useChatWindowComponent();
   const { data: contacts, isLoading: contactsLoading } = useContactsQuery();
+  const { data: conversations } = useConversationsQuery();
 
-  const chatWindowRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if(chatWindowRef.current) {
-      setChatWindowElement(chatWindowRef.current);
+  const onChatWindowMount = useCallback((element: HTMLDivElement) => {
+    if(element && !chatWindowElement) {
+      setChatWindowElement(element);
     }
-  }, [chatWindowRef, isMessagesFetching]);
+  }, [chatWindowElement]);
 
   return (
     isMessagesFetching ? (
@@ -41,7 +42,7 @@ const ChatWindow = () => {
         }} 
       >
         { 
-          (!receiver?.id || !id) ? (
+          (!receiver?.id && !id) ? (
             <>
               <Box
                 sx={{
@@ -54,19 +55,23 @@ const ChatWindow = () => {
                   rowGap: '24px'
                 }}
               >
-                <Box
-                  sx={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    padding: '4px 12px',
-                    borderRadius: '24px',
-
-                    color: 'white'
-                  }}
-                >
-                  Выберите диалог, чтобы отправить сообщение
-                </Box>
                 {
-                  !contacts?.length && !contactsLoading && (
+                  conversations?.length || contacts?.length ? (
+                    <Box
+                      sx={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                        padding: '4px 12px',
+                        borderRadius: '24px',
+
+                        color: 'white'
+                      }}
+                    >
+                      Выберите диалог или контакт, чтобы отправить сообщение
+                    </Box>
+                  ) : null
+                } 
+                {
+                  (!contacts?.length && !contactsLoading) ? (
                     <Box
                       sx={{
                         backgroundColor: 'rgba(0, 0, 0, 0.2)',
@@ -74,6 +79,7 @@ const ChatWindow = () => {
                         borderRadius: '24px',
 
                         color: 'white',
+                        textAlign: 'center',
 
                         display: 'flex',
                         flexDirection: 'column',
@@ -81,7 +87,8 @@ const ChatWindow = () => {
                         rowGap: '12px'
                       }}
                     >
-                      Чтобы начать общение, добавьте контакты или найдите чаты
+                      Чтобы начать общение, добавьте пользователя в список контактов и отправьте сообщение <br />
+                      (Добавьте пользователя с логином "user" для тестирования функционала приложения)
                       <Box
                         sx={{
                           display: 'flex',
@@ -97,17 +104,16 @@ const ChatWindow = () => {
                         >
                           Добавить контакты
                         </Button>
-                        <Button variant='text'>Найти чаты</Button>
                       </Box>
                     </Box>
-                  )
+                  ) : null
                 }
               </Box>
             </>
           ) : (
             <>
               <Box
-                ref={chatWindowRef}
+                ref={onChatWindowMount}
                 component='div'
                 sx={{
                   overflowY: 'auto', 
@@ -131,12 +137,12 @@ const ChatWindow = () => {
                 }
               </Box>
               {
-                showScrollButton && (
+                (showScrollButton && id) ? (
                   <ScrollButtonComponent
                     chatId={id}
                     onClick={handleOnScrollDownButton}
                   />
-                )
+                ) : null
               }
             </>
           )

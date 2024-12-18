@@ -2,7 +2,7 @@ import { Box, Button, CircularProgress, Container, InputAdornment, TextField, Ty
 import { forwardRef, useState } from "react";
 import ContactsIcon from '@mui/icons-material/Contacts';
 import { useAddContactMutation } from "@/api/hooks/users";
-import { toggleAddContactModal } from "@/store/modals";
+import { closeAddContactModal } from "@/store/modals";
 import { useQueryClient } from "@tanstack/react-query";
 import { userKeys } from "@/api/queries/queryKeys";
 
@@ -11,7 +11,7 @@ const AddContactsModal = forwardRef<HTMLDivElement, React.ComponentPropsWithoutR
   const [value, setValue] = useState('');
   const addContactMutation = useAddContactMutation({
     onSuccess: () => {
-      toggleAddContactModal();
+      closeAddContactModal();
       client.refetchQueries({
         queryKey: userKeys.contacts
       });

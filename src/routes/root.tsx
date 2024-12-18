@@ -3,9 +3,23 @@ import { Chat } from "../components/index";
 import { useTheme } from '@mui/material/styles';
 import Sidebar from '../components/Sidebar/Sidebar.component';
 import ImageModal from '../components/ImageModal/ImageModal.component';
+import { useEffect } from 'react';
+import { useSocket } from '@/store/socket';
+import { setupSocketsErrorHandler } from '@/utils';
 
 const Root = () => {
   const theme = useTheme();
+  const { messagesSocket, statusSocket, usersSocket } = useSocket();
+
+  useEffect(() => {
+    const sockets = [messagesSocket, statusSocket, usersSocket];
+
+    if(sockets.every((socket) => socket !== undefined)) {
+      const cleanup = setupSocketsErrorHandler(sockets);
+
+      return cleanup;
+    }
+  }, [messagesSocket, statusSocket, usersSocket]);
 
   return (
     <>

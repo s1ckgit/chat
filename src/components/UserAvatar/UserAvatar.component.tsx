@@ -52,7 +52,7 @@ const UserAvatarComponent = ({ id, ...props }: { id: User['id'] | undefined } & 
     <Avatar
       sx={{
         ...sx,
-        cursor: 'pointer'
+        cursor: data && 'pointer'
       }}
       {...restProps}
       src={data ? data.thumbnailUrl : ''}

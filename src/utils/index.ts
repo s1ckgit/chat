@@ -1,6 +1,29 @@
 import { format, isToday, isThisWeek, differenceInHours, differenceInDays, isYesterday } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import type { Socket } from 'socket.io-client';
+import { ExternalToast, toast } from 'sonner';
+
+export const setupSocketsErrorHandler = (sockets: Socket[]) => {
+  const handleError = (error: { message: string }) => {
+    toast.error(error.message, defaultToastConfig);
+  };
+
+  sockets.forEach((socket) => {
+    socket.off('error', handleError);
+    socket.on('error', handleError);
+  });
+
+  return () => {
+    sockets.forEach((socket) => {
+      socket.off('error', handleError);
+    });
+  };
+};
+
+export const onAuthSuccess = (data: { id: string; }) => {
+  localStorage.setItem('id', data.id);
+  window.location.reload();
+};
 
 export const scrollChat = (chatWindowElement: HTMLDivElement, messageId: string | null, smooth?: boolean) => {
   if(!messageId) {
@@ -26,6 +49,7 @@ export const scrollChat = (chatWindowElement: HTMLDivElement, messageId: string 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const enableSocketEventListeners = (socket: Socket, config: {eventName: string; eventCallback: (vars: any) => void}[]) => {
   config.forEach((event) => {
+    socket.off(event.eventName, event.eventCallback);
     socket.on(event.eventName, event.eventCallback);
   });
 
@@ -36,7 +60,7 @@ export const enableSocketEventListeners = (socket: Socket, config: {eventName: s
   };
 };
 
-export const formatDate = (date: Date) => {
+export const formatDate = (date: string) => {
   if(isToday(date)) {
     return format(date, 'HH:mm');
   } else if (isThisWeek(date, { weekStartsOn: 1 })) {
@@ -266,3 +290,7 @@ export const buildGridForAttachmentsModal = (count: number) => {
   }
 };
 
+export const defaultToastConfig: ExternalToast = {
+  closeButton: true,
+  duration: 3000
+};

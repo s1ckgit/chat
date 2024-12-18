@@ -1,8 +1,10 @@
 import axios from "axios";
+
 import { getMyInfo } from "../api/services/users";
 import { redirect } from "react-router-dom";
 import { io } from "socket.io-client";
 import { setSocket, setStatusSocket, setUsersSocket } from "../store/socket";
+
 
 export const rootPageLoader = async () => {
   try {

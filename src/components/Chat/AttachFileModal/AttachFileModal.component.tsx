@@ -3,7 +3,7 @@ import { Box, Button, Container, Modal, TextField, Typography } from "@mui/mater
 
 import { toggleAttachFileModal, useModals } from "../../../store/modals";
 import { setChatInput, useChatInput } from "../../../store/chat";
-import { useSendMessage } from "../../../utils/hooks";
+import { useSendMessage } from "@/hooks/helpers";
 import AttachFileList from "./AttachFileList.component";
 
 const AttachFileModal = () => {

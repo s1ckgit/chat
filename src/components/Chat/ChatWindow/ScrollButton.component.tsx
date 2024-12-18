@@ -2,7 +2,7 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import { useColors, useTransitions } from "@/theme/hooks";
 import { Badge, ButtonBase } from '@mui/material';
 import { ButtonHTMLAttributes } from 'react';
-import { useUnreadCount } from '@/utils/hooks';
+import { useUnreadCount } from '@/hooks/helpers';
 
 interface IScrollButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   chatId: string;

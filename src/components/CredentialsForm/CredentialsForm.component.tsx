@@ -3,168 +3,181 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { LoginButton as TelegramLoginButton } from '@telegram-auth/react';
+import { CredentialResponse, GoogleLogin as GoogleLoginButton } from '@react-oauth/google';
+import { toast } from 'sonner';
 
 import { loginSchema, registrationSchema } from '../../utils/schemas';
-import { useAuthorizeUserMutation, useNewUserMutation } from '../../api/hooks/auth';
+import { useAuthorizeUserMutation, useGoogleAuthMutation, useNewUserMutation, useTelegramAuthMutation } from '../../api/hooks/auth';
+import { ITelegramProfileData, IUserCredentials } from '@/types';
+import { defaultToastConfig, onAuthSuccess } from '@/utils';
 
-const CredentialsForm = ({ variant }: { variant : 'login' | 'register' }) => {
-  const LoginForm = () => {
-    const authorizeUserMutation = useAuthorizeUserMutation({
-      onSuccess: (data) => {
-        localStorage.setItem('id', data.id);
-        window.location.reload();
-      },
-    });
+const AuthForm = ({
+  title,
+  fields,
+  schema,
+  redirectText,
+  redirectLink,
+  redirectLinkText,
+  onSubmit,
+}: {
+  title: string;
+  fields: Array<{ name: string; label: string; type?: string }>;
+  schema: any;
+  onSubmit: (data: any) => void;
+  redirectText: string;
+  redirectLink: string;
+  redirectLinkText: string;
+}) => {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(schema),
+  });
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
-      resolver: zodResolver(loginSchema),
-    });
-  
-    const onSubmit = (data: any) => {
-      authorizeUserMutation.mutate(data);
-    };
-  
-    return (
-      <Container 
-        sx={{
-          maxWidth: '640px'
+  const telegramAuthMutation = useTelegramAuthMutation({
+    onSuccess: onAuthSuccess,
+    onError: () => {
+      toast.error('Неизвестная ошибка. Повторите попытку.', defaultToastConfig);
+    }
+  });
+
+  const googleAuthMutation = useGoogleAuthMutation({
+    onSuccess: onAuthSuccess,
+    onError: () => {
+      toast.error('Неизвестная ошибка. Повторите попытку.', defaultToastConfig);
+    }
+  });
+
+  const onTelegramAuth = (data: ITelegramProfileData) => {
+    telegramAuthMutation.mutate(data);
+  };
+
+  const onGoogleAuth = (credentialResponse: CredentialResponse) => {
+    googleAuthMutation.mutate(credentialResponse);
+  };
+
+  return (
+    <Container
+      sx={{ maxWidth: '640px' }}
+      maxWidth={false}
+    >
+      <Typography variant="h4">{title}</Typography>
+      <form
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          rowGap: '24px',
         }}
-        maxWidth={false} 
+        onSubmit={handleSubmit(onSubmit)}
       >
-        <Typography variant="h4">Логин</Typography>
-        <form
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            rowGap: '24px'
-          }} 
-          onSubmit={handleSubmit(onSubmit)}
+        {fields.map(({ name, label, type }) => (
+          <TextField
+            key={name}
+            label={label}
+            type={type || 'text'}
+            {...register(name)}
+            error={!!errors[name]}
+            helperText={errors[name]?.message as string}
+            fullWidth
+          />
+        ))}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
         >
-          <TextField
-            label="Логин"
-            {...register('login')}
-            error={!!errors.username}
-            helperText={errors.username ? errors.username.message as string : ''}
-            fullWidth
+          {title}
+        </Button>
+        <Box sx={{ display: 'flex', columnGap: '8px' }}>
+          <TelegramLoginButton
+            requestAccess={null}
+            showAvatar={false}
+            lang="ru"
+            botUsername="messenger_tg_bot"
+            onAuthCallback={onTelegramAuth}
           />
-          <TextField
-            label="Пароль"
-            type="password"
-            {...register('password')}
-            error={!!errors.password}
-            helperText={errors.password ? errors.password.message as string : ''}
-            fullWidth
+          <GoogleLoginButton
+            type="icon"
+            locale="ru"
+            onSuccess={onGoogleAuth}
+            onError={() => console.error('Ошибка авторизации через Google')}
           />
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary"
-          >
-            Войти
-          </Button>
-          <Box
-            component='div' 
-            sx={{
-              textAlign: 'center'
-            }}
-          >
-            <Typography
-              component='p'
-            >
-              Ещё нет аккаунта?
-            </Typography>
-            <Link to='/registration'>Зарегистрироваться</Link>
-          </Box>
-        </form>
-      </Container>
-    );
-  };
-  
-  const RegistrationForm = () => {
-    const newUserMutation = useNewUserMutation({
-      onSuccess: (data) => {
-        localStorage.setItem('id', data.id);
-        window.location.reload();
+        </Box>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography component="p">{redirectText}</Typography>
+          <Link to={redirectLink}>{redirectLinkText}</Link>
+        </Box>
+      </form>
+    </Container>
+  );
+};
+
+const CredentialsForm = ({ variant }: { variant: 'login' | 'register' }) => {
+
+  const authorizeUserMutation = useAuthorizeUserMutation({
+    onSuccess: onAuthSuccess,
+    onError: () => {
+      toast.error('Неизвестная ошибка. Повторите попытку.', defaultToastConfig);
+    }
+  });
+
+  const newUserMutation = useNewUserMutation({
+    onSuccess: onAuthSuccess,
+    onError: (axiosError) => {
+      if(axiosError.response.data.details.message === 'duplicate') {
+        toast.error('Пользователь с таким логином уже существует.', defaultToastConfig);
+      } else {
+        toast.error('Неизвестная ошибка. Повторите попытку.', defaultToastConfig);
       }
-    });
+    }
+  });
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
-      resolver: zodResolver(registrationSchema),
-    });
-  
-    const onSubmit = (data: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword, ...newUserData } = data;
-      newUserMutation.mutate(data);
-    };
-  
-    return (
-      <Container
-        sx={{
-          maxWidth: '640px'
-        }} 
-        maxWidth={false}
-      >
-        <Typography variant="h4">Регистрация</Typography>
-        <form
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            rowGap: '24px'
-          }}   
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <TextField
-            label="Логин"
-            {...register('login')}
-            error={!!errors.username}
-            helperText={errors.username ? errors.username.message as string : ''}
-            fullWidth
-          />
-          <TextField
-            label="Пароль"
-            type="password"
-            {...register('password')}
-            helperText={errors.password ? errors.password.message as string : ''}
-            error={!!errors.password}
-            fullWidth
-          />
-          <TextField
-            label="Подтверждение пароля"
-            type="password"
-            {...register('confirmPassword')}
-            helperText={errors.confirmPassword ? errors.confirmPassword.message as string : ''}
-            error={!!errors.confirmPassword}
-            fullWidth
-          />
-          <Button
-            type="submit" 
-            variant="contained" 
-            color="primary"
-          >
-            Зарегистрироваться
-          </Button>
-          <Box 
-            sx={{
-              textAlign: 'center'
-            }}
-          >
-            <Typography
-              component='p'
-            >
-              Есть аккаунт?
-            </Typography>
-            <Link to='/login'>Войти</Link>
-          </Box>
-        </form>
-      </Container>
-    );
+  const onLogin = (data: IUserCredentials) => authorizeUserMutation.mutate(data);
+
+  const onRegister = (data: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { confirmPassword, ...userData } = data;
+    newUserMutation.mutate(userData);
   };
 
-  if(variant === 'login') return <LoginForm />;
-  if(variant === 'register') return <RegistrationForm />;
+  if (variant === 'login') {
+
+    return (
+      <AuthForm
+        title="Логин"
+        fields={[
+          { name: 'login', label: 'Логин' },
+          { name: 'password', label: 'Пароль', type: 'password' },
+        ]}
+        schema={loginSchema}
+        onSubmit={onLogin}
+        redirectText="Ещё нет аккаунта?"
+        redirectLink="/registration"
+        redirectLinkText="Зарегистрироваться"
+      />
+    );
+  }
+
+  if (variant === 'register') {
+
+    return (
+      <AuthForm
+        title="Регистрация"
+        fields={[
+          { name: 'login', label: 'Логин' },
+          { name: 'password', label: 'Пароль', type: 'password' },
+          { name: 'confirmPassword', label: 'Подтверждение пароля', type: 'password' },
+        ]}
+        schema={registrationSchema}
+        onSubmit={onRegister}
+        redirectText="Есть аккаунт?"
+        redirectLink="/login"
+        redirectLinkText="Войти"
+      />
+    );
+  }
+
+  return null;
 };
 
 export default CredentialsForm;

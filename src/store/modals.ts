@@ -34,7 +34,7 @@ export const useModals = create<IModals>(() => ({
 export const toggleContactsModal = () => {
   useModals.setState((state) => ({
     ...state,
-    contactsModal: !state.contactsModal
+    contactsModal: !state.contactsModal,
   }));
 };
 
@@ -45,10 +45,19 @@ export const toggleDrawer = () => {
   }));
 };
 
-export const toggleAddContactModal = () => {
+
+export const openAddContactModal = () => {
   useModals.setState((state) => ({
     ...state,
-    addContactModal: !state.addContactModal
+    addContactModal: true
+  }));
+};
+
+
+export const closeAddContactModal = () => {
+  useModals.setState((state) => ({
+    ...state,
+    addContactModal: false
   }));
 };
 

@@ -6,7 +6,7 @@ import { useUserMeQuery } from "../../../api/hooks/users";
 import { formatDate } from "../../../utils";
 
 import MessageStatus from '../../MessageStatus/MessageStatus.component';
-import { useUnreadCount } from "../../../utils/hooks";
+import { useUnreadCount } from "@/hooks/helpers";
 
 
 

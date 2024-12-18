@@ -3,20 +3,19 @@ import api from '../client';
 
 export const getMessages = async (id: Conversation['id'] | undefined) => {
   if(!id) return null;
-  const { data } = await api.get<MessagesApiResponse>(`/messages/${id}`, { withCredentials: true });
-  console.log(typeof data[0].date);
+  const { data } = await api.get<MessagesApiResponse>(`/messages/${id}`);
   
   return data;
 };
 
 export const getConversations = async () => {
-  const { data } = await api.get<Conversation[]>('/me/conversations', { withCredentials: true });
+  const { data } = await api.get<Conversation[]>('/me/conversations');
 
   return data;
 };
 
 export const getLastMessage = async (id: Conversation['id']) => {
-  const { data } = await api.get<Message>(`/lastmessage/${id}`, { withCredentials: true });
+  const { data } = await api.get<Message>(`/lastmessage/${id}`);
 
   return data;
 };

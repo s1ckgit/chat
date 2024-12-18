@@ -1,10 +1,10 @@
 import { Box, Button, Divider, IconButton, Drawer as MUIDrawer } from "@mui/material";
 
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import SettingsIcon from '@mui/icons-material/Settings';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+// import SettingsIcon from '@mui/icons-material/Settings';
+// import DarkModeIcon from '@mui/icons-material/DarkMode';
+// import ToggleOffIcon from '@mui/icons-material/ToggleOff';
+// import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ContactsIcon from '@mui/icons-material/Contacts';
 
 import { useColors, useTransitions, useTypography } from "../../theme/hooks";
@@ -17,7 +17,7 @@ import { useSocket } from "@/store/socket";
 const Drawer = () => {
   const { usersSocket } = useSocket();
 
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  // const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isHover, setIsHover] = useState(false);
   
   const typography = useTypography();
@@ -27,7 +27,7 @@ const Drawer = () => {
   const { data: me } = useUserMeQuery();
   const isOpened = useModals(state => state.drawer);
 
-  const onDarkModeToggle = () => setTheme((prev) => prev === 'light' ? 'dark' : 'light');
+  // const onDarkModeToggle = () => setTheme((prev) => prev === 'light' ? 'dark' : 'light');
   const changeUserAvatarMutation = useChangeUserAvatarMutation({
     onSuccess: () => {
       if(!usersSocket) return;
@@ -35,6 +35,7 @@ const Drawer = () => {
       usersSocket.emit(`user_avatar_update`, { id: me?.id });
     }
   });
+
   const logoutMutation = useLogoutMutation({
     onSuccess: () => {
       localStorage.removeItem('id');
@@ -143,8 +144,8 @@ const Drawer = () => {
             justifyItems: 'start',
           }}
         >
-          <Button onClick={() => toggleContactsModal()} sx={{ color: "#000", justifyContent: 'start', paddingLeft: '32px' }} startIcon={<ContactsIcon />}>Контакты</Button>
-          <Button sx={{ color: "#000", justifyContent: 'start', paddingLeft: '32px' }} startIcon={<SettingsIcon />}>Настройки</Button>
+          <Button onClick={toggleContactsModal} sx={{ color: "#000", justifyContent: 'start', paddingLeft: '32px' }} startIcon={<ContactsIcon />}>Контакты</Button>
+          {/* <Button sx={{ color: "#000", justifyContent: 'start', paddingLeft: '32px' }} startIcon={<SettingsIcon />}>Настройки</Button>
           <Button 
             onClick={onDarkModeToggle} 
             sx={{ 
@@ -156,14 +157,14 @@ const Drawer = () => {
               },
               color: "#000", 
               justifyContent: 'start',
-              paddingLeft: '32px', 
+              // paddingLeft: '32px', 
               paddingRight: '32px' 
             }} 
             startIcon={<DarkModeIcon />} 
             endIcon={theme === 'light' ? <ToggleOffIcon color="ghost" /> : <ToggleOnIcon/>}
           >
             Тёмный режим
-          </Button>
+          </Button> */}
         </Box>
 
         <Button

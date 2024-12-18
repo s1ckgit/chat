@@ -3,7 +3,7 @@ import MessageStatus from '../../MessageStatus/MessageStatus.component';
 import { useEffect } from 'react';
 import { useInView } from "react-intersection-observer";
 import { Box, Typography } from '@mui/material';
-import { useMessage } from '../../../utils/hooks';
+import { useMessage } from '@/hooks/helpers';
 import type { IPendingMessage } from '../../../types';
 import MessageAttachment from './MessageAttachment.component';
 import { buildGridForAttachments } from '../../../utils';

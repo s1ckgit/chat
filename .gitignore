@@ -25,3 +25,5 @@ dist-ssr
 
 .env.*
 .env
+
+ngrok.exe
