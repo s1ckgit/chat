@@ -26,7 +26,7 @@ const ContactComponent = ({ contactData, searchValue }: IContactComponentProps) 
   return (
     <Box 
       onClick={() => {
-        setChatId(conversationId ?? undefined);
+        setChatId(conversationId);
         setReceiver(contactUser);
         closeAllModals();
       }}

@@ -55,6 +55,13 @@ export const deletePendingMessage = (id: string | string[]) => {
   });
 };
 
+export const deleteAllPendingMessages = () => {
+  useChat.setState((state) => ({
+    ...state,
+    pendingMessages: new Map()
+  }));
+};
+
 export const setChatWindowElement = (element: HTMLDivElement) => {
   useChat.setState((state) => ({
     ...state,

@@ -13,7 +13,6 @@ export const useMessagesQuery = (id: Conversation['id'] | undefined) => {
     placeholderData: keepPreviousData,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
-    enabled: !!id
   });
 };
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useMessagesQuery } from "@/api/hooks/messages";
 import { useUserMeQuery } from "@/api/hooks/users";
-import { deletePendingMessage, setChatId, setShowScrollButton, useChat } from "@/store/chat";
+import { deleteAllPendingMessages, deletePendingMessage, setChatId, setShowScrollButton, useChat } from "@/store/chat";
 import { useSocket } from "@/store/socket";
 import { enableSocketEventListeners, preloadImages, scrollChat } from "@/utils";
 import { useConversationReadMessages } from "./helpers";
@@ -17,7 +17,7 @@ export const useChatWindowComponent = () => {
 
   const { messagesSocket: socket } = useSocket();
   const { id, pendingMessages, receiver, chatWindowElement, showScrollButton } = useChat();
-  const { data, isFetching } = useMessagesQuery(id);
+  const { data, isFetching, isSuccess } = useMessagesQuery(id);
   const { data: user } = useUserMeQuery();
 
   const markMessageAsRead = useConversationReadMessages();
@@ -150,6 +150,12 @@ export const useChatWindowComponent = () => {
       };
     }
   }, [chatWindowElement, handleChatWindowScroll]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      deleteAllPendingMessages();
+    }
+  }, [data, isSuccess]);
 
   return {
     messageGroups,

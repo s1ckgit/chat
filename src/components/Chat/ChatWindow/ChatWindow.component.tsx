@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useContactsQuery } from "../../../api/hooks/users";
 import { toggleContactsModal } from "../../../store/modals";
 import { useChatWindowComponent } from "@/hooks/components";
@@ -12,8 +12,7 @@ const ChatWindow = () => {
   const { 
     messageGroups, 
     handleOnScrollDownButton, 
-    receiver, 
-    isMessagesFetching,
+    receiver,
     showScrollButton,
     id,
     chatWindowElement
@@ -28,11 +27,6 @@ const ChatWindow = () => {
   }, [chatWindowElement]);
 
   return (
-    isMessagesFetching ? (
-      <Box className='loading-container'>
-        <CircularProgress />
-      </Box>
-    ) : (
       <Box
         component='div'
         sx={{ 
@@ -149,8 +143,7 @@ const ChatWindow = () => {
         }
         
     </Box>
-    )
-  );
+    );
 };
 
 export default ChatWindow;
