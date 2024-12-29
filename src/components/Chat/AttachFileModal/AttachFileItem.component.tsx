@@ -1,5 +1,5 @@
 import { Box, IconButton } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Delete as DeleteIcon } from '@mui/icons-material';
 import { removeAttachment } from "@/store/modals";
 
 interface IAttachFileItem {

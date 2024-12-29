@@ -16,7 +16,7 @@ const Chat = () => {
         display: 'grid',
         overflow: 'hidden',
         height: '100vh',
-        gridTemplateRows: receiver || id ? 'auto 1fr 80px' : '1fr'
+        gridTemplateRows: receiver || id ? 'auto 1fr auto' : '1fr'
       }}
     >
       <AttachFileModal />

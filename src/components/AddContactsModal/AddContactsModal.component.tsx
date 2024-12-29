@@ -1,10 +1,11 @@
-import { Box, Button, CircularProgress, Container, InputAdornment, TextField, Typography } from "@mui/material";
 import { forwardRef, useState } from "react";
-import ContactsIcon from '@mui/icons-material/Contacts';
+import { Box, Button, CircularProgress, Container, InputAdornment, TextField, Typography } from "@mui/material";
+import { Contacts as ContactsIcon } from '@mui/icons-material';
 import { useAddContactMutation } from "@/api/hooks/users";
 import { closeAddContactModal } from "@/store/modals";
 import { useQueryClient } from "@tanstack/react-query";
 import { userKeys } from "@/api/queries/queryKeys";
+import { toast } from "sonner";
 
 const AddContactsModal = forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof Container>>((_props, ref) => {
   const client = useQueryClient();
@@ -15,6 +16,9 @@ const AddContactsModal = forwardRef<HTMLDivElement, React.ComponentPropsWithoutR
       client.refetchQueries({
         queryKey: userKeys.contacts
       });
+    },
+    onError: (e) => {
+      toast.error(e.response?.data.error);
     }
   });
 
@@ -80,15 +84,24 @@ const AddContactsModal = forwardRef<HTMLDivElement, React.ComponentPropsWithoutR
           fullWidth
         />
       </Box>
-      <Button 
-        onClick={onAdd} 
-        variant="text"
-        endIcon={
-          isPending ? (<CircularProgress size='1rem' />) : null
-        }
+      <Box 
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          padding: '10px'
+        }}
       >
-        Добавить
-      </Button>
+        <Button 
+          onClick={onAdd} 
+          variant="text"
+          endIcon={
+            isPending ? (<CircularProgress size='1rem' />) : null
+          }
+        >
+          Добавить
+        </Button>
+        <Button onClick={closeAddContactModal} variant="text">Закрыть</Button>
+      </Box>
     </Container>
   );
 });

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useUserMeQuery } from "@/api/hooks/users";
 import { setChatInput, setPendingMessage, useChat } from "@/store/chat";
 import { useSocket } from "@/store/socket";
-import { enableSocketEventListeners, formatStatus, scrollChat } from "@/utils";
+import { enableSocketEventListeners, formatStatus, scrollChat, trimTrailingWhitespace } from "@/utils";
 import { IClientMessageAttachments, IPendingMessage } from "@/types";
 import { format } from "date-fns";
 import { toggleAttachFileModal } from "@/store/modals";
@@ -114,7 +114,7 @@ export const useMessage = (messageData: Message | IPendingMessage) => {
   const { senderId, id, content: text, status, createdAt, attachments } = messageData;
 
   const isInitiatorMessage = senderId ===  user?.id;
-  const date = format(createdAt, 'HH:mm');
+  const date = format(new Date(createdAt), 'HH:mm');
 
   return { id, text, status, attachments, isInitiatorMessage, date };
 };
@@ -151,14 +151,14 @@ export const useSendMessage = () => {
     if(!chatWindowElement) return;
 
     const messageId = uuidv4();
-    const createdAt = new Date();
+    const createdAt = new Date().toISOString();
 
     const newPendingMessage: IPendingMessage = {
       id: messageId,
       createdAt,
       status: 'pending',
       conversationId: id as string,
-      content: message,
+      content: trimTrailingWhitespace(message),
       senderId: user?.id as string,
       receiverId: receiver?.id,
       attachments

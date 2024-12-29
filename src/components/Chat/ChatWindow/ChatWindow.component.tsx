@@ -32,7 +32,8 @@ const ChatWindow = () => {
         sx={{ 
           height: '100%',
           overflowY: 'hidden', 
-          background: 'linear-gradient(to bottom, #c8e6c9, #a5d6a7)'
+          background: `url("chat-background.png") center center/cover no-repeat, 
+            linear-gradient(to bottom, #c8e6c9, #a5d6a7)`
         }} 
       >
         { 
@@ -46,7 +47,8 @@ const ChatWindow = () => {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  rowGap: '24px'
+                  rowGap: '24px',
+                  padding: '20px'
                 }}
               >
                 {
@@ -56,6 +58,7 @@ const ChatWindow = () => {
                         backgroundColor: 'rgba(0, 0, 0, 0.2)',
                         padding: '4px 12px',
                         borderRadius: '24px',
+                        textAlign: 'center',
 
                         color: 'white'
                       }}

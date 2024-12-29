@@ -13,13 +13,13 @@ export const rootPageLoader = async () => {
       return redirect('/login');
     }
     
-    const socket = io('http://localhost:3000/api/messages', {
+    const socket = io('ws://localhost:3000/api/messages', {
       query: {
         userId: userData?.id 
       }
     });
-    const statusSocket = io('http://localhost:3000/api/statuses');
-    const usersSocket = io('http://localhost:3000/api/users');
+    const statusSocket = io('ws://localhost:3000/api/statuses');
+    const usersSocket = io('ws://localhost:3000/api/users');
     
     setSocket(socket);
     setStatusSocket(statusSocket);

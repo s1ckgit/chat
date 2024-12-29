@@ -39,7 +39,7 @@ const Contacts = ({ searchValue }: IContactProps) => {
             color: colors['ghost-main'],
           }}
         >
-          Нет диалогов
+          Нет контактов
         </Typography>
       </Box>
     );

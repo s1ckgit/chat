@@ -14,8 +14,7 @@ export interface ICreateUserData {
   password: string;
 }
 
-export interface IPendingMessage extends Omit<Message, 'sender' | 'conversation' | 'lastConversation' | 'createdAt'> {
-  createdAt: Date;
+export interface IPendingMessage extends Omit<Message, 'sender' | 'conversation' | 'lastConversation'> {
   receiverId?: string;
 }
 

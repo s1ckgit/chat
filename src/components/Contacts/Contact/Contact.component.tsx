@@ -75,7 +75,14 @@ const ContactComponent = ({ contactData, searchValue }: IContactComponentProps) 
           text={login} 
           highlight={searchValue || ''} 
         />
-        <Typography variant="subtitle1">{status}</Typography>
+        <Typography 
+          sx={{
+            ...typography.info, 
+            color: colors['ghost-main']
+          }}
+        >
+          {status}
+        </Typography>
       </Box>
     </Box>
   );

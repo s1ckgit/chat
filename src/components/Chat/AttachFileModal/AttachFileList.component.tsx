@@ -4,7 +4,7 @@ import { buildGridForAttachmentsModal } from "../../../utils";
 import { useColors, useTransitions } from "../../../theme/hooks";
 import { useModals } from "../../../store/modals";
 
-import UploadIcon from '@mui/icons-material/Upload';
+import { Upload as UploadIcon } from '@mui/icons-material';
 
 
 

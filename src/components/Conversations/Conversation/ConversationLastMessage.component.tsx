@@ -1,6 +1,6 @@
 import { Badge, Box, Typography } from "@mui/material";
 
-import ImageIcon from '@mui/icons-material/Image';
+import { Image as ImageIcon } from '@mui/icons-material';
 import { useColors, useTypography } from "../../../theme/hooks";
 import { useUserMeQuery } from "../../../api/hooks/users";
 import { formatDate } from "../../../utils";
@@ -53,12 +53,17 @@ const ConversationLastMessage = ({ message }: { message: Message }) => {
         <Typography
           component='span'
           sx={{
-            fontWeight: 'bold',
+            color: colors['ghost-main'],
+            fontStyle: 'italic'
           }}
         >
           {attachmentsLabel}
         </Typography>
-        <ImageIcon />
+        <ImageIcon 
+          sx={{
+            color: colors['ghost-main']
+          }}
+        />
       </Box>
     );
   };

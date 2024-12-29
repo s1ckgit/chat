@@ -88,7 +88,7 @@ const AuthForm = ({
         >
           {title}
         </Button>
-        <Box sx={{ display: 'flex', columnGap: '8px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <TelegramLoginButton
             requestAccess={null}
             showAvatar={false}
@@ -97,7 +97,7 @@ const AuthForm = ({
             onAuthCallback={onTelegramAuth}
           />
           <GoogleLoginButton
-            type="icon"
+            type="standard"
             locale="ru"
             onSuccess={onGoogleAuth}
             onError={() => console.error('Ошибка авторизации через Google')}

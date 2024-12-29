@@ -1,6 +1,6 @@
  
 import { create } from 'zustand';
-import { IPendingMessage } from '../types';
+import type { IPendingMessage } from '../types';
 
 interface IChat {
   id?: string;
@@ -16,14 +16,15 @@ export const useChat = create<IChat>(() => ({
   receiver: undefined,
   pendingMessages: new Map(),
   chatWindowElement: null,
-  showScrollButton: false
+  showScrollButton: false,
+  isOpened: false
 }));
 
 export const setChatId = (id: string | undefined) => {
   useChat.setState((state) => ({ ...state, id }));
 };
 
-export const setReceiver = (receiver: User) => {
+export const setReceiver = (receiver: User | undefined) => {
   useChat.setState((state) => ({ ...state, receiver }));
 };
 
@@ -62,7 +63,7 @@ export const deleteAllPendingMessages = () => {
   }));
 };
 
-export const setChatWindowElement = (element: HTMLDivElement) => {
+export const setChatWindowElement = (element: HTMLDivElement | null) => {
   useChat.setState((state) => ({
     ...state,
     chatWindowElement: element

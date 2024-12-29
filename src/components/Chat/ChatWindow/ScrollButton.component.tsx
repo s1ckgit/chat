@@ -1,4 +1,4 @@
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
+import { KeyboardDoubleArrowDown as KeyboardDoubleArrowDownIcon } from '@mui/icons-material';
 import { useColors, useTransitions } from "@/theme/hooks";
 import { Badge, ButtonBase } from '@mui/material';
 import { ButtonHTMLAttributes } from 'react';

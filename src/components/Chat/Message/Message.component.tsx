@@ -120,7 +120,7 @@ const Message = ({ messageData, renderAvatar, isLastMessage, onRead }: IMessageP
             ...typography['messages-text'],
             wordWrap: 'break-word',
             wordBreak: 'break-all',
-            whiteSpace: 'normal',
+            whiteSpace: 'pre-wrap',
             overflowWrap: 'break-word',
             padding: '6px',
             paddingLeft: '16px',

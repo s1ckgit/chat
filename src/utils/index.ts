@@ -3,9 +3,13 @@ import { ru } from 'date-fns/locale';
 import type { Socket } from 'socket.io-client';
 import { ExternalToast, toast } from 'sonner';
 
+export function trimTrailingWhitespace(text: string): string {
+  return text.replace(/[\s\n\r]+$/g, '');
+}
+
 export const setupSocketsErrorHandler = (sockets: Socket[]) => {
-  const handleError = (error: { message: string }) => {
-    toast.error(error.message, defaultToastConfig);
+  const handleError = (error: { error: { message: string } }) => {
+    toast.error(error.error.message, defaultToastConfig);
   };
 
   sockets.forEach((socket) => {
@@ -81,15 +85,15 @@ export const formatStatus = (input: string): string => {
   const diffDays = differenceInDays(now, date);
 
   if (diffHours < 1) {
-    return 'last seen recently';
+    return 'был в сети недавно';
   } else if (diffHours < 24) {
-    return format(date, 'HH:mm');
+    return `был в сети сегодня в ${format(date, 'HH:mm')}`;
   } else if (isYesterday(date)) {
-    return 'yesterday';
+    return 'был в сети вчера';
   } else if (diffDays < 365) {
-    return format(date, 'dd.MM');
+    return `был в сети ${format(date, 'dd.MM')}`;
   } else {
-    return format(date, 'dd.MM.yyyy');
+    return `был в сети ${format(date, 'dd.MM.yyyy')}`;
   }
 };
 

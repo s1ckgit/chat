@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Container, IconButton, Modal } from "@mui/material";
+import { Close as CloseIcon } from '@mui/icons-material';
 import { setImageModalSrc, toggleImageModal, useModals } from "../../store/modals";
-import CloseIcon from '@mui/icons-material/Close';
 import { useColors, useTransitions } from "../../theme/hooks";
 import { useEffect, useState } from "react";
 
@@ -120,6 +120,7 @@ const ImageModal = () => {
             ) : (
               <img 
                 style={{
+                  maxWidth: '100%',
                   objectFit: 'contain'
                 }}
                 src={imageSrc}

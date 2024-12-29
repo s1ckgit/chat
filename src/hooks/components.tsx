@@ -30,7 +30,9 @@ export const useChatWindowComponent = () => {
     const today = format(new Date(), 'dd.MM.yyyy');
     const groupedMessages = new Map<string, (Message | IPendingMessage)[]>();
   
-    data?.forEach((group) => groupedMessages.set(group.date, group.messages));
+    data?.forEach((group) => {
+      groupedMessages.set(group.date, group.messages);
+    });
   
     if (pendingMessages.size > 0) {
       const pendingArray = Array.from(pendingMessages.values());
@@ -152,7 +154,7 @@ export const useChatWindowComponent = () => {
   }, [chatWindowElement, handleChatWindowScroll]);
 
   useEffect(() => {
-    if (isSuccess) {
+    if(isSuccess) {
       deleteAllPendingMessages();
     }
   }, [data, isSuccess]);

@@ -1,5 +1,5 @@
 import { messagesKeys } from "@/api/queries/queryKeys";
-import { MessagesApiResponse } from "@/types";
+import type { MessagesApiResponse } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -31,17 +31,29 @@ export const useAddMessageToList = () => {
 
   const addMessageToList = useCallback(({ conversationId, message, dateGroup }: { conversationId: Conversation['id']; message: Message; dateGroup: string; }) => {
     queryClient.setQueryData(messagesKeys.id(conversationId), (oldMessages: MessagesApiResponse) => {
-      if(!oldMessages) return;
 
-      return [...oldMessages.map((group) => {
-        if(group.date === dateGroup) {
-          return {
-            ...group,
-            messages: [...group.messages, message]
-          };
-        }
-      })];
-    });
+      if(oldMessages?.find(group => group.date === dateGroup)) {
+        return [...oldMessages.map((group) => {
+          if(group.date === dateGroup) {
+            return {
+              ...group,
+              messages: [...group.messages, message]
+            };
+          } else {
+            return group;
+          }
+        })];
+      } else {
+        return oldMessages ? [...oldMessages, {
+          date: dateGroup,
+          messages: [message]
+        }] : [{
+          date: dateGroup,
+          messages: [message]
+        }];
+      }
+    }
+      );
   }, [queryClient]);
 
   return addMessageToList;

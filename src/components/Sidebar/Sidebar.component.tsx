@@ -1,7 +1,9 @@
 import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
 
-import SearchIcon from '@mui/icons-material/Search';
-import MenuIcon from '@mui/icons-material/Menu';
+import { 
+  Search as SearchIcon,
+  Menu as MenuIcon
+ } from '@mui/icons-material';
 
 import { useColors, useTransitions } from '../../theme/hooks';
 import Drawer from './Drawer.component';

@@ -1,11 +1,14 @@
-import { Box, Button, Divider, IconButton, Drawer as MUIDrawer } from "@mui/material";
+import { Box, Button, Divider, IconButton, Drawer as MUIDrawer, useMediaQuery } from "@mui/material";
 
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import { 
+  PhotoCamera as PhotoCameraIcon,
+  Contacts as ContactsIcon,
+  Close as CloseIcon
+ } from '@mui/icons-material';
 // import SettingsIcon from '@mui/icons-material/Settings';
 // import DarkModeIcon from '@mui/icons-material/DarkMode';
 // import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 // import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-import ContactsIcon from '@mui/icons-material/Contacts';
 
 import { useColors, useTransitions, useTypography } from "../../theme/hooks";
 import { ChangeEvent, useState } from "react";
@@ -23,6 +26,7 @@ const Drawer = () => {
   const typography = useTypography();
   const colors = useColors();
   const transitions = useTransitions();
+  const oneColumnMode = useMediaQuery('(max-width:860px)');
   
   const { data: me } = useUserMeQuery();
   const isOpened = useModals(state => state.drawer);
@@ -75,8 +79,27 @@ const Drawer = () => {
           flexDirection: 'column',
           width: '300px',
           height: '100%',
+          position: 'relative'
         }}
       >
+        {
+          oneColumnMode && 
+          (
+            <IconButton
+              onClick={toggleDrawer}
+              sx={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px'
+              }}
+            >
+              <CloseIcon
+                color="ghost"
+                fontSize='large' 
+              />
+            </IconButton>
+          )
+        }
         <Box
           component='div'
           sx={{

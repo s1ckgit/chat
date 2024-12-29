@@ -81,8 +81,6 @@ const Conversations = ({ searchValue }: { searchValue: string; }) => {
         <Conversation key={c.id} conversation={c} />
       ));
     }
-
-    console.log(isFetched);
   
     return isFetched ? NoConversations : null;
   }, [NoConversations, conversations, filteredConvesations, isFetched, searchValue]);

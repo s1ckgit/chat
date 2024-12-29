@@ -1,6 +1,8 @@
 import { CircularProgress, Typography } from "@mui/material";
-import CheckIcon from '@mui/icons-material/Check';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
+import {
+  Check as CheckIcon, 
+  DoneAll as DoneAllIcon
+} from '@mui/icons-material';
 import { useColors, useTypography } from "../../theme/hooks";
 
 

@@ -1,8 +1,9 @@
-import { Box, Button, Container, Divider, InputAdornment, Modal, TextField, Typography } from "@mui/material";
-import { closeAddContactModal, openAddContactModal, toggleContactsModal, useModals } from "@/store/modals";
-import SearchIcon from '@mui/icons-material/Search';
-import AddContactsModal from "../AddContactsModal/AddContactsModal.component";
 import { useState } from "react";
+import { Box, Button, Container, Divider, InputAdornment, Modal, TextField, Typography } from "@mui/material";
+import { Search as SearchIcon } from '@mui/icons-material';
+
+import { closeAddContactModal, openAddContactModal, toggleContactsModal, useModals } from "@/store/modals";
+import AddContactsModal from "../AddContactsModal/AddContactsModal.component";
 import Contacts from "../Contacts/Contacts.component";
 
 const ContactsModal = () => {
@@ -13,6 +14,12 @@ const ContactsModal = () => {
 
   return (
       <Modal
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '10px'
+        }}
         open={isOpened} 
         slotProps={{
           backdrop: {
@@ -35,14 +42,9 @@ const ContactsModal = () => {
                 },
                 display: 'grid',
                 gridTemplate: 'auto 1fr auto auto / 1fr ',
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                height: '60vh',
                 maxWidth: 400,
+                minHeight: '60vh',
                 backgroundColor: 'white',
-
               }}
             >
               <Box>
