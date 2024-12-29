@@ -25,10 +25,6 @@ export const rootPageLoader = async () => {
     setStatusSocket(statusSocket);
     setUsersSocket(usersSocket);
 
-    socket.on('connnection', () => {
-      console.log('connected');
-    });
-
     return null;
   } catch (error) {
     if (axios.isAxiosError(error)) {
