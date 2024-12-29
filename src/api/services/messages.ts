@@ -14,12 +14,6 @@ export const getConversations = async () => {
   return data;
 };
 
-export const getLastMessage = async (id: Conversation['id']) => {
-  const { data } = await api.get<Message>(`/lastmessage/${id}`);
-
-  return data;
-};
-
 export const sendMessageAttachments = async (formData: FormData) => {
   const { data } = await api.post<NonNullable<Message['attachments']>>('/messages/attachments', formData, {
     headers: {
