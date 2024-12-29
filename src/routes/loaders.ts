@@ -13,13 +13,13 @@ export const rootPageLoader = async () => {
       return redirect('/login');
     }
     
-    const socket = io('wss://telegaramm.ru/api/messages', {
+    const socket = io('https://telegaramm.ru/api/messages', {
       query: {
         userId: userData?.id 
       }
     });
-    const statusSocket = io('wss://telegaramm.ru/api/statuses');
-    const usersSocket = io('wss://telegaramm.ru/api/users');
+    const statusSocket = io('https://telegaramm.ru/api/statuses');
+    const usersSocket = io('https://telegaramm.ru/api/users');
     
     setSocket(socket);
     setStatusSocket(statusSocket);
