@@ -7,6 +7,7 @@ https://telegaramm.ru
 - Socket.IO
 - PostgreSQL
 - Redis
+- Zustand
 - MaterialUI
 - Vite
 
